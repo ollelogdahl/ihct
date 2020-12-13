@@ -11,8 +11,6 @@ unsigned ihct_testi = 0;
 void (*ihct_tests_fn[4])(struct test_result*);
 // An array of ptrs to the names of every test.
 char **ihct_tests_name;
-// An array of all first failed (or last if all successful) assert results in every test.
-struct test_result **ihct_results;<
 
 IHCT_TEST(arithmetic_addition_basic) {
     IHCT_ASSERT(1 + 2 == 3);

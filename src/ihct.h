@@ -18,13 +18,19 @@ typedef struct {
 } ihct_unit;
 
 // Basic linked-list implementation for listing all units.
+typedef struct ihct_unitlist_node {
+    struct ihct_unitlist_node *next;
+    ihct_unit *unit;
+} ihct_unitlist_node;
 typedef struct ihct_unitlist {
-    struct ihct_unitlist *next;
-    ihct_test_proc f;
+    ihct_unitlist_node *head;
+    unsigned size;
 } ihct_unitlist;
+
 
 bool ihct_assert_impl(bool eval, struct test_result *result, char *code, char *file, unsigned long line);
 int ihct_run(int argc, char **argv);
+void ihct_init(void);
 
 // Create and appends new unit.
 void ihct_init_unit(char *name, ihct_test_proc procedure);
@@ -54,24 +60,15 @@ communicating text attributes to terminal emulators.
 #define IHCT_BACKGROUND_GRAY "\033[47;1m"
 
 
-
-
+// Assertions
 #define IHCT_ASSERT(stmnt)\
     if(!ihct_assert_impl(stmnt, result, #stmnt, __FILE__, __LINE__)) return
 #define IHCT_NASSERT(stmnt)\
     if(!ihct_assert_impl(!stmnt, result, #stmnt, __FILE__, __LINE__)) return
 
-#define IHCT_RUN(argc, argv)\
-    ihct_run(argc, argv)
-
-
-/*
-#define IHCT_TEST(name)\
-    static void test_##name(struct test_result *result);
-*/
-
-// Reserved names
-#define ICHT_CALL(name) test_##name()
+// Function macros
+#define IHCT_RUN(argc, argv) ihct_run(argc, argv)
+#define IHCT_INIT() ihct_init()
 
 // Create a new test unit, and adds it using 'ihct_add_test'.
 #define IHCT_TEST(name)\
