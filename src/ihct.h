@@ -1,3 +1,5 @@
+/** @file */
+
 #ifndef IHCT_H
 #define IHCT_H
 
@@ -88,6 +90,12 @@ ihct_test_result *ihct_run_specific(ihct_unit *unit);
 
 // Assertions
 /**
+ * @defgroup ASSERTIONS Assertions
+ * Here are all the assertions documented.
+ * @{
+ */
+
+/**
  * @brief Asserts a statement inside a test unit. If the expression is false,
  * the unit will fail the test.
  * @param expr the expression to evaluate.
@@ -101,6 +109,11 @@ ihct_test_result *ihct_run_specific(ihct_unit *unit);
  */
 #define IHCT_NASSERT(expr) \
     if(!ihct_assert_impl(!expr, result, #expr, __FILE__, __LINE__)) return
+
+/**
+ * @}
+ */
+
 
 // Function macros
 /**
