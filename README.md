@@ -1,8 +1,15 @@
 # ihct
-### 'I Hate C Testing': a minimal testing framework
+### 'I Hate C Testing': a minimal testing framework for C
 Olle Lögdahl, 13 December 2020
 
+![downloads](https://img.shields.io/github/downloads/ollelogdahl/ihct/total)
+![licence](https://img.shields.io/github/license/ollelogdahl/ihct)
+![issues](https://img.shields.io/github/issues-raw/ollelogdahl/ihct)
+
 ---
+
+**ihct** is a minimal C unit-testing framework. Intended for light unit testing, and keeping the user interface
+logical and light. Looking for more features, so please give any suggestions.
 
 ### Installation & Usage
 
@@ -28,3 +35,14 @@ int main(int argc, char **argv) {
     return IHCT_RUN(argc, argv);
 }
 ```
+
+## Links
+
+- [Repository](https://github.com/ollelogdahl/ihct/)
+- For reporting errors, visit [Issue Tracker](https://github.com/ollelogdahl/ihct/issues)!
+- Related Projects:
+  - [cheat](https://github.com/Tuplanolla/cheat) by Guillermo "Tordek" Freschi and Sampsa "Tuplanolla" Kiiskinen
+
+## Licensing
+
+This project, and all code it contains, is licensed under the *MIT License* and can be read [here](LICENSE).
