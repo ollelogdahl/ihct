@@ -10,7 +10,8 @@ ihct_unitlist *unit_list;
 // An array of all first failed (or last if all successful) assert results in every test.
 ihct_test_result **ihct_results;
 
-bool ihct_assert_impl(bool eval, ihct_test_result *result, char *code, char *file, unsigned long line) {
+bool ihct_assert_impl(bool eval, ihct_test_result *result, char *code, char *file, 
+                      unsigned long line) {
     result->passed = eval;
 
     if(!eval) {
@@ -54,6 +55,7 @@ static void ihct_init_unitlist(void) {
 }
 
 void ihct_unitlist_add(ihct_unit *unit) {
+    printf("Called add unit\n");
     // Before:          After
     // ┌────┐   ┌─┐     ┌────┐   ┌────┐   ┌─┐
     // │head│-->│a|     │head│-->│node|-->│a|
@@ -69,10 +71,10 @@ void ihct_unitlist_add(ihct_unit *unit) {
     unit_list->size++;
 }
 
-void ihct_init(void) __attribute__((constructor));
 void ihct_init(void) {
-   // atm, only initializes the unit list. Is this neccessary?
-   ihct_init_unitlist();
+    printf("Called init\n");
+    // atm, only initializes the unit list. Is this neccessary?
+    ihct_init_unitlist();
 }
 
 static void ihct_unitlist_free(void) {
@@ -143,7 +145,8 @@ int ihct_run(int argc, char **argv) {
             IHCT_RESET "of "
             IHCT_FOREGROUND_YELLOW "%d run"
             IHCT_RESET "\n";
-        printf(status_format, unit_list->size-failed_count, failed_count, unit_list->size);
+        printf(status_format, unit_list->size-failed_count, failed_count, 
+               unit_list->size);
     } 
     else {
         char *status_format = IHCT_FOREGROUND_GREEN "%d successful "

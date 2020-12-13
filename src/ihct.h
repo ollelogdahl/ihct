@@ -55,7 +55,8 @@ bool ihct_assert_impl(bool eval, ihct_test_result *result, char *code, char *fil
 // Runs all tests.
 int ihct_run(int argc, char **argv);
 // Initializes the unitlist (Has to be done before all testing units are created).
-void ihct_init(void);
+// Using priority to ensure that the unit list is constructed before it gets populated.
+void ihct_init(void) __attribute__((constructor(101)));
 
 // Run a specific testing unit.
 ihct_test_result *ihct_run_specific(ihct_unit *unit);
@@ -93,12 +94,11 @@ ihct_test_result *ihct_run_specific(ihct_unit *unit);
 
 // Function macros
 #define IHCT_RUN(argc, argv) ihct_run(argc, argv)
-#define IHCT_INIT() ihct_init()
 
 // Create a new test unit, and adds it using 'ihct_add_test'.
 #define IHCT_TEST(name)\
     static void test_##name(ihct_test_result *result); \
-    static void __attribute__((constructor)) __construct_test_##name(void) { \
+    static void __attribute__((constructor(102))) __construct_test_##name(void) { \
         ihct_unit *unit = ihct_init_unit(#name, test_##name); \
         ihct_unitlist_add(unit); \
     } \
