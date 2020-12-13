@@ -4,7 +4,10 @@ Olle Lögdahl, 13 December 2020
 
 ---
 
-### Usage
+### Installation & Usage
+
+To use this framework, include `ihct.h` and `ihct.c` in your project. See `ex.c` for an extended example.
+The test creates it's own executable, and therefore needs an entrypoint.
 
 ```c
 #include <ihct.h>
@@ -19,5 +22,9 @@ IHCT_TEST(string_basic) {
     char *s1 = "abba";
     IHCT_NASSERT(strcpr(s1, "abba"));
     IHCT_ASSERT(strcpr(s1, "Abba"));
+}
+
+int main(int argc, char **argv) {
+    return IHCT_RUN(argc, argv);
 }
 ```
