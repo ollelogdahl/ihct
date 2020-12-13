@@ -21,7 +21,7 @@ bool ihct_assert_impl(bool eval, struct test_result *result, char *code, char *f
     return true;
 }
 
-void ihct_init_unit(char *name, ihct_test_proc procedure) {
+ihct_unit *ihct_init_unit(char *name, ihct_test_proc procedure) {
     //printf("Constructing new unit: %s\n", name);
 
     ihct_unit *unit = (ihct_unit *)malloc(sizeof(ihct_unit));
@@ -29,21 +29,12 @@ void ihct_init_unit(char *name, ihct_test_proc procedure) {
     strcpy(strmem, name);
     unit->name = strmem;
     unit->procedure = procedure;
+    //ihct_unitlist_add(node);
 
-    // Add unit to list
-    ihct_unitlist_node *node = malloc(sizeof(ihct_unitlist_node));
-    node->next = NULL;
-    node->unit = unit;
-
-    node->next = unit_list->head->next;
-    unit_list->head->next = node;
-
-    unit_list->head->next->unit = node->unit;
-    unit_list->size++;
+    return unit;
 }
 
-void ihct_init(void) __attribute__((constructor));
-void ihct_init(void) {
+static void ihct_init_unitlist() {
     // initialize the unit_list head, which points at itself
     // and doesn't have a unit.
     unit_list = malloc(sizeof(ihct_unitlist));
@@ -54,6 +45,28 @@ void ihct_init(void) {
 
     unit_list->head = head;
     unit_list->size = 0;
+}
+
+void ihct_unitlist_add(ihct_unit *unit) {
+    // Before:          After
+    // ┌────┐   ┌─┐     ┌────┐   ┌────┐   ┌─┐
+    // │head│-->│a|     │head│-->│node|-->│a|
+    // └────┘   └─┘     └────┘   └────┘   └─┘
+
+    // Allocate a new node
+    ihct_unitlist_node *node = malloc(sizeof(ihct_unitlist_node));
+
+    // Assign pointers
+    node->next = unit_list->head->next;
+    unit_list->head->next = node;
+    unit_list->head->next->unit = unit;
+    unit_list->size++;
+}
+
+void ihct_init(void) __attribute__((constructor));
+void ihct_init(void) {
+   // atm, only initializes the unit list. Is this neccessary?
+   ihct_init_unitlist();
 }
 
 int ihct_run(int argc, char **argv) {
@@ -103,6 +116,8 @@ int ihct_run(int argc, char **argv) {
             IHCT_RESET "\n";
         printf(status_format, unit_list->size, unit_list->size);
     }
+
+    free(ihct_results);
 
     if(failed_count) {
         printf(IHCT_FOREGROUND_RED "FAILURE\n" IHCT_RESET);
