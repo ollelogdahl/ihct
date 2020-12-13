@@ -56,7 +56,7 @@ bool ihct_assert_impl(bool eval, ihct_test_result *result, char *code, char *fil
 int ihct_run(int argc, char **argv);
 // Initializes the unitlist (Has to be done before all testing units are created).
 // Using priority to ensure that the unit list is constructed before it gets populated.
-void ihct_init(void) __attribute__((constructor(101)));
+static void ihct_init(void) __attribute__((constructor(101)));
 
 // Run a specific testing unit.
 ihct_test_result *ihct_run_specific(ihct_unit *unit);
@@ -87,15 +87,34 @@ ihct_test_result *ihct_run_specific(ihct_unit *unit);
 
 
 // Assertions
-#define IHCT_ASSERT(stmnt) \
-    if(!ihct_assert_impl(stmnt, result, #stmnt, __FILE__, __LINE__)) return
-#define IHCT_NASSERT(stmnt) \
-    if(!ihct_assert_impl(!stmnt, result, #stmnt, __FILE__, __LINE__)) return
+/**
+ * @brief Asserts a statement inside a test unit. If the expression is false,
+ * the unit will fail the test.
+ * @param expr the expression to evaluate.
+ */
+#define IHCT_ASSERT(expr) \
+    if(!ihct_assert_impl(expr, result, #expr, __FILE__, __LINE__)) return
+/**
+ * @brief Asserts a statement inside a test unit. If the expression is true,
+ * the unit will fail the test.
+ * @param expr the expression to evaluate.
+ */
+#define IHCT_NASSERT(expr) \
+    if(!ihct_assert_impl(!expr, result, #expr, __FILE__, __LINE__)) return
 
 // Function macros
+/**
+ * @brief Runs all tests. to be called once in the main entrypoint.
+ * @param argc argument count, directly passed from main.
+ * @param argv argument array, directly passed from main.
+ */
 #define IHCT_RUN(argc, argv) ihct_run(argc, argv)
 
 // Create a new test unit, and adds it using 'ihct_add_test'.
+/**
+ * @brief Create a new test unit, which can take any number of asserts.
+ * @param name the name of the test.
+ */
 #define IHCT_TEST(name)\
     static void test_##name(ihct_test_result *result); \
     static void __attribute__((constructor(102))) __construct_test_##name(void) { \
