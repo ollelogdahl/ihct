@@ -12,7 +12,6 @@ IHCT_TEST(arithmetic_addition_basic) {
 IHCT_TEST(arithmetic_addition_big) {
     IHCT_ASSERT(1000 + 2000 == 3000);
     IHCT_ASSERT(4000 + 2000 == 6000);
-    IHCT_ASSERT(300 * 1231 == 3);
     IHCT_ASSERT(8000 + 8000 == 16000);
 }
 IHCT_TEST(arithmetic_multiplication) {
@@ -22,8 +21,8 @@ IHCT_TEST(arithmetic_multiplication) {
 }
 
 IHCT_TEST(strings_basic) {
-    IHCT_ASSERT(!strcmp("abba", "abba"));
-    IHCT_ASSERT(strcmp("abba", "Abba") == 0);
+    IHCT_NASSERT(strcmp("abba", "abba"));
+    IHCT_ASSERT(strcmp("abba", "Abba"));
 }
 
 int main(int argc, char **argv) {

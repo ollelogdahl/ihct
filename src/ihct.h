@@ -5,20 +5,20 @@
 
 // Structure for a testunits return value. Contains state, the code (assert) which
 // failed the test, and a reference to where the code is.
-typedef struct test_result {
+typedef struct {
     bool passed;
     char *code;
     char *file;
     unsigned long line;
-} test_result;
+} ihct_test_result;
 
 // Short for a function returning a test_result pointer, with no arguments.
-typedef void (*ihct_test_proc)(test_result *);
+typedef void (*ihct_test_proc)(ihct_test_result *);
 
 // Object representing a testing unit, containing the units name and its procedure
 // (implemented test function).
 typedef struct {
-    const char *name;
+    char *name;
     ihct_test_proc procedure;
 } ihct_unit;
 
@@ -42,20 +42,23 @@ typedef struct {
 } ihct_unitlist;
 
 // Initializes the list.
-static void ihct_init_unitlist();
+static void ihct_init_unitlist(void);
 // Adds a node to the list. Does this in a first-in style, because the list is only 
 // forward linked. TODO: could we make it last-in, is there any point to it?
 void ihct_unitlist_add(ihct_unit *unit);
 // Frees the list and all contained nodes. Also calls ihct_unit_free.
-static void ihct_unitlist_free();
+static void ihct_unitlist_free(void);
 
 // Called within a test. 
-bool ihct_assert_impl(bool eval, struct test_result *result, char *code, char *file, 
+bool ihct_assert_impl(bool eval, ihct_test_result *result, char *code, char *file, 
                       unsigned long line);
 // Runs all tests.
 int ihct_run(int argc, char **argv);
 // Initializes the unitlist (Has to be done before all testing units are created).
 void ihct_init(void);
+
+// Run a specific testing unit.
+ihct_test_result *ihct_run_specific(ihct_unit *unit);
 
 
 // These are ISO/IEC 6429 escape sequences for
@@ -83,9 +86,9 @@ void ihct_init(void);
 
 
 // Assertions
-#define IHCT_ASSERT(stmnt)\
+#define IHCT_ASSERT(stmnt) \
     if(!ihct_assert_impl(stmnt, result, #stmnt, __FILE__, __LINE__)) return
-#define IHCT_NASSERT(stmnt)\
+#define IHCT_NASSERT(stmnt) \
     if(!ihct_assert_impl(!stmnt, result, #stmnt, __FILE__, __LINE__)) return
 
 // Function macros
@@ -94,11 +97,11 @@ void ihct_init(void);
 
 // Create a new test unit, and adds it using 'ihct_add_test'.
 #define IHCT_TEST(name)\
-    static void test_##name(struct test_result *result); \
+    static void test_##name(ihct_test_result *result); \
     static void __attribute__((constructor)) __construct_test_##name(void) { \
         ihct_unit *unit = ihct_init_unit(#name, test_##name); \
         ihct_unitlist_add(unit); \
     } \
-    static void test_##name(struct test_result *result)
+    static void test_##name(ihct_test_result *result)
 
 #endif

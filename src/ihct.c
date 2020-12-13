@@ -4,12 +4,13 @@
 #include <stdio.h>
 #include <string.h>
 
+// A list of all units.
 ihct_unitlist *unit_list;
 
 // An array of all first failed (or last if all successful) assert results in every test.
-struct test_result **ihct_results;
+ihct_test_result **ihct_results;
 
-bool ihct_assert_impl(bool eval, struct test_result *result, char *code, char *file, unsigned long line) {
+bool ihct_assert_impl(bool eval, ihct_test_result *result, char *code, char *file, unsigned long line) {
     result->passed = eval;
 
     if(!eval) {
@@ -34,7 +35,12 @@ ihct_unit *ihct_init_unit(char *name, ihct_test_proc procedure) {
     return unit;
 }
 
-static void ihct_init_unitlist() {
+void ihct_unit_free(ihct_unit *unit) {
+    free(unit->name);
+    free(unit);
+}
+
+static void ihct_init_unitlist(void) {
     // initialize the unit_list head, which points at itself
     // and doesn't have a unit.
     unit_list = malloc(sizeof(ihct_unitlist));
@@ -69,9 +75,32 @@ void ihct_init(void) {
    ihct_init_unitlist();
 }
 
+static void ihct_unitlist_free(void) {
+    ihct_unitlist_node *cur = unit_list->head;
+    for(unsigned i = 0; i < unit_list->size; i++) {
+        ihct_unitlist_node *prev = cur;
+        cur = cur->next;
+
+        ihct_unit_free(cur->unit);
+        free(prev);
+    }
+    free(unit_list);
+}
+
+
+ihct_test_result *ihct_run_specific(ihct_unit *unit) {
+    // Allocate memory for the tests result.
+
+    ihct_test_result *result = malloc(sizeof(ihct_test_result));
+    // Run test, and save it's result into i.
+    (*unit->procedure)(result);
+
+    return result;
+}
+
 int ihct_run(int argc, char **argv) {
     // Allocate results
-    ihct_results = calloc(unit_list->size, sizeof(struct test_result*));
+    ihct_results = calloc(unit_list->size, sizeof(ihct_test_result*));
 
     unsigned failed_count = 0;
 
@@ -79,13 +108,17 @@ int ihct_run(int argc, char **argv) {
     for(unsigned i = 0; i < unit_list->size; i++) {
         cur = cur->next;
 
-        // Allocate memory for the result of the test.
-        struct test_result *mem = malloc(sizeof(struct test_result));
-        ihct_results[i] = mem;
+        ihct_results[i] = ihct_run_specific(cur->unit);
 
-        // Run test, and save it's status into i.
-        (*cur->unit->procedure)(ihct_results[i]);
+        if(ihct_results[i]->passed) {
+            printf(IHCT_BACKGROUND_GREEN IHCT_BOLD "." IHCT_RESET);
+        } else {
+            printf(IHCT_BACKGROUND_RED IHCT_BOLD "!" IHCT_RESET);
+        }
+    }
+    printf("\n\n");
 
+    for(unsigned i = 0; i < unit_list->size; ++i) {
         if(!ihct_results[i]->passed) {
             char *assertion_format = IHCT_BOLD "%s:%d: "
                 IHCT_RESET "assertion in '"
@@ -98,6 +131,9 @@ int ihct_run(int argc, char **argv) {
             failed_count++;
         }
     }
+
+    free(ihct_results);
+    ihct_unitlist_free();
 
     printf("\n");
     if(failed_count) {
@@ -116,8 +152,6 @@ int ihct_run(int argc, char **argv) {
             IHCT_RESET "\n";
         printf(status_format, unit_list->size, unit_list->size);
     }
-
-    free(ihct_results);
 
     if(failed_count) {
         printf(IHCT_FOREGROUND_RED "FAILURE\n" IHCT_RESET);
