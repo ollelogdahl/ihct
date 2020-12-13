@@ -2,7 +2,6 @@
 ### 'I Hate C Testing': a minimal testing framework for C
 Olle Lögdahl, 13 December 2020
 
-![downloads](https://img.shields.io/github/downloads/ollelogdahl/ihct/total)
 ![licence](https://img.shields.io/github/license/ollelogdahl/ihct)
 ![issues](https://img.shields.io/github/issues-raw/ollelogdahl/ihct)
 
