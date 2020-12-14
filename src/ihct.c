@@ -49,9 +49,6 @@ void ihct_init(void) {
     testunits = ihct_init_vector();
 }
 
-
-
-
 ihct_vector *ihct_init_vector() {
     ihct_vector *v = malloc(sizeof(ihct_vector));
     if(v == NULL) {
