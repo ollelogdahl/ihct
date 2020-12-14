@@ -109,7 +109,24 @@ ihct_test_result *ihct_run_specific(ihct_unit *unit);
 /// @ingroup assertions
 /// @param expr the expression to evaluate.
 #define IHCT_NASSERT(expr)                                                              \
-    if(!ihct_assert_impl(!expr, result, #expr, __FILE__, __LINE__)) return
+    if(!ihct_assert_impl(!expr, result, "!" #expr, __FILE__, __LINE__)) return
+
+/// @brief Asserts two strings inside a test unit to be equal. If there is any difference
+/// in the strings, the unit will fail the test.
+/// @ingroup assertions
+/// @param s1 first string to compare
+/// @param s2 second string to compare
+#define IHCT_ASSERT_STR(s1, s2)                                                         \
+    if(!ihct_assert_impl(!strcmp(s1, s2), result, #s1 " == " #s2, __FILE__,             \
+       __LINE__)) return
+/// @brief Asserts two strings inside a test unit to not be equal. If there is any 
+/// difference in the strings, the unit will fail the test.
+/// @ingroup assertions
+/// @param s1 first string to compare
+/// @param s2 second string to compare
+#define IHCT_NASSERT_STR(s1, s2)                                                        \
+    if(!ihct_assert_impl(strcmp(s1, s2), result, #s1 " != " #s2, __FILE__,              \
+       __LINE__)) return
 
 /// @brief Set the test as passed and return.
 /// @ingroup assertions

@@ -23,6 +23,13 @@ IHCT_TEST(arithmetic_multiplication) {
 IHCT_TEST(strings_basic) {
     IHCT_NASSERT(strcmp("abba", "abba"));
     IHCT_ASSERT(strcmp("abba", "Abba"));
+
+    IHCT_ASSERT_STR("abba", "abba");
+    IHCT_NASSERT_STR("Alfa", "adolf");
+}
+
+IHCT_TEST(strings_invalid) {
+    IHCT_ASSERT_STR("Evil", "Good"); // should fail.
 }
 
 int main(int argc, char **argv) {
