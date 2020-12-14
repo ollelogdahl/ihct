@@ -23,6 +23,11 @@ bool ihct_assert_impl(bool eval, ihct_test_result *result, char *code, char *fil
     return true;
 }
 
+void ihct_construct_test_impl(char *name, ihct_test_proc procedure) {
+    ihct_unit *unit = ihct_init_unit(name, procedure);
+    ihct_unitlist_add(unit);
+}
+
 ihct_unit *ihct_init_unit(char *name, ihct_test_proc procedure) {
     //printf("Constructing new unit: %s\n", name);
 
