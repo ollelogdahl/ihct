@@ -41,13 +41,6 @@ The example `ex.c` can be compiled with by running:
 cd ihct
 make
 ```
-or
-```bash
-cd ihct
-mkdir build
-cd build
-cmake .. && make -j4
-```
 
 ---
 
