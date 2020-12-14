@@ -4,6 +4,7 @@
 #define IHCT_H
 
 #include <stdbool.h>
+#include <stdlib.h>
 
 // Structure for a testunits return value. Contains state, the code (assert) which
 // failed the test, and a reference to where the code is.
@@ -66,6 +67,25 @@ static void ihct_init(void) __attribute__((constructor(101)));
 ihct_test_result *ihct_run_specific(ihct_unit *unit);
 
 
+
+
+
+
+// Datatype representing a vector. to be used internally in IHCT_RUN
+typedef struct {
+    void **data;
+    size_t size;
+} ihct_vector;
+
+// Allocates a new vector with capacity cap.
+ihct_vector *ihct_init_vector();
+// Add a pointer to a allocated object at the end of the vector.
+void ihct_vector_add(ihct_vector *v, void *obj);
+// Gets the object at location index in vector v.
+void *ihct_vector_get(ihct_vector *v, int index);
+// Deallocates the vector.
+void ihct_free_vector(ihct_vector *v);
+
 // These are ISO/IEC 6429 escape sequences for
 // communicating text attributes to terminal emulators.
 // Note that some compilers do not understand '\x1b', and therefore \033[0m is 
@@ -119,7 +139,7 @@ ihct_test_result *ihct_run_specific(ihct_unit *unit);
 #define IHCT_ASSERT_STR(s1, s2)                                                         \
     if(!ihct_assert_impl(!strcmp(s1, s2), result, #s1 " == " #s2, __FILE__,             \
        __LINE__)) return
-/// @brief Asserts two strings inside a test unit to not be equal. If there is any 
+/// @brief Asserts two strings inside a test unit not to be equal. If there is any 
 /// difference in the strings, the unit will fail the test.
 /// @ingroup assertions
 /// @param s1 first string to compare
@@ -163,6 +183,8 @@ ihct_test_result *ihct_run_specific(ihct_unit *unit);
 // Create a new test unit, and adds it using 'ihct_add_test'.
 /// @brief Create a new test unit, which can take any number of asserts.
 /// @ingroup funcs
+/// @code
+/// IHCT_TEST(basic_test)
 /// @param name the name of the test.
 #define IHCT_TEST(name)\
     static void test_##name(ihct_test_result *result);                                  \

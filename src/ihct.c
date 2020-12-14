@@ -92,6 +92,37 @@ static void ihct_unitlist_free(void) {
 }
 
 
+
+
+ihct_vector *ihct_init_vector() {
+    ihct_vector *v = malloc(sizeof(ihct_vector));
+    v->size = 0;
+    v->data = NULL;
+}
+void ihct_vector_add(ihct_vector *v, void *obj) {
+    if(v->size == 0) {
+        // Allocate a single 
+        v->data = malloc(sizeof(obj));
+        v->data[0] = obj;
+    } else {
+        v->data = realloc(v->data, v->size);
+        v->data[v->size] = obj;
+    }
+    v->size++;
+}
+void *ihct_vector_get(ihct_vector *v, int index) {
+    return v->data[index];
+}
+void ihct_free_vector(ihct_vector *v) {
+    free(v->data);
+    free(v);
+    v->data = NULL;
+    v->size = NULL;
+}
+
+
+
+
 ihct_test_result *ihct_run_specific(ihct_unit *unit) {
     // Allocate memory for the tests result.
 
