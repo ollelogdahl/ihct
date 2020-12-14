@@ -24,6 +24,9 @@ jobs:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
         
+    - name: That Style install
+      run: git clone https://github.com/jl-wynen/that_style.git
+    
     - name: Doxygen Action
       uses: mattnotmitt/doxygen-action@v1.1.0
       with:
