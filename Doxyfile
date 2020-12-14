@@ -1,4 +1,5 @@
-PROJECT_NAME            = "ihct (I Hate C Testing)"
+PROJECT_NAME            = "ihct"
+PROJECT_BRIEF           = "(I Hate C Testing)"
 OUTPUT_DIRECTORY        = docs/
 OUTPUT_LANGUAGE         = English
 INPUT                   = README.md src/
