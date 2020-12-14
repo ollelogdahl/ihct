@@ -1,5 +1,6 @@
 exec = test
 sources = $(wildcard src/*.c)
+sources += examples/ex.c
 objects = $(sources:.c=.o)
 flags = -g -Wall -std=c99
 
@@ -12,3 +13,4 @@ $(exec): $(objects)
 clean:
 	-rm $(exec)
 	-rm src/*.o
+	-rm examples/*.o

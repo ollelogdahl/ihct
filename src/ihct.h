@@ -1,4 +1,4 @@
-/** @file */
+/// @file
 
 #ifndef IHCT_H
 #define IHCT_H
@@ -89,45 +89,37 @@ ihct_test_result *ihct_run_specific(ihct_unit *unit);
 
 
 // Assertions
-/**
- * @defgroup ASSERTIONS Assertions
- * Here are all the assertions documented.
- * @{
- */
+/// @defgroup assertions Assertions
+/// @brief All assertions.
 
-/**
- * @brief Asserts a statement inside a test unit. If the expression is false,
- * the unit will fail the test.
- * @param expr the expression to evaluate.
- */
+/// @brief Asserts a statement inside a test unit. If the expression is false,
+/// the unit will fail the test.
+/// @ingroup assertions
+/// @param expr the expression to evaluate.
 #define IHCT_ASSERT(expr) \
     if(!ihct_assert_impl(expr, result, #expr, __FILE__, __LINE__)) return
-/**
- * @brief Asserts a statement inside a test unit. If the expression is true,
- * the unit will fail the test.
- * @param expr the expression to evaluate.
- */
+
+/// @brief Asserts a statement inside a test unit. If the expression is true,
+/// the unit will fail the test.
+/// @ingroup assertions
+/// @param expr the expression to evaluate.
 #define IHCT_NASSERT(expr) \
     if(!ihct_assert_impl(!expr, result, #expr, __FILE__, __LINE__)) return
 
-/**
- * @}
- */
-
-
 // Function macros
-/**
- * @brief Runs all tests. to be called once in the main entrypoint.
- * @param argc argument count, directly passed from main.
- * @param argv argument array, directly passed from main.
- */
+/// @defgroup funcs Testing functions
+/// @brief More general macros for function.
+
+/// @brief Runs all tests. Is to be called once in the main entrypoint.
+/// @ingroup funcs
+/// @param argc argument count, directly passed from main.
+/// @param argv argument array, directly passed from main.
 #define IHCT_RUN(argc, argv) ihct_run(argc, argv)
 
 // Create a new test unit, and adds it using 'ihct_add_test'.
-/**
- * @brief Create a new test unit, which can take any number of asserts.
- * @param name the name of the test.
- */
+/// @brief Create a new test unit, which can take any number of asserts.
+/// @ingroup funcs
+/// @param name the name of the test.
 #define IHCT_TEST(name)\
     static void test_##name(ihct_test_result *result); \
     static void __attribute__((constructor(102))) __construct_test_##name(void) { \
@@ -135,5 +127,7 @@ ihct_test_result *ihct_run_specific(ihct_unit *unit);
         ihct_unitlist_add(unit); \
     } \
     static void test_##name(ihct_test_result *result)
+
+/// @}
 
 #endif
