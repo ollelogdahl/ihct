@@ -32,11 +32,10 @@ ihct_unit *ihct_init_unit(char *name, ihct_test_proc procedure) {
     //printf("Constructing new unit: %s\n", name);
 
     ihct_unit *unit = (ihct_unit *)malloc(sizeof(ihct_unit));
-    char *strmem = malloc(strlen(name));
+    char *strmem = malloc(strlen(name) + 1);
     strcpy(strmem, name);
     unit->name = strmem;
     unit->procedure = procedure;
-    //ihct_unitlist_add(node);
 
     return unit;
 }
