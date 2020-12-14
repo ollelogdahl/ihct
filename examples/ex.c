@@ -43,17 +43,16 @@ IHCT_TEST(strings_more) {
 IHCT_TEST(self_vector_all) {
     ihct_vector *v = ihct_init_vector();
 
-    for(int i = 0; i < 8000000; ++i) {
-        int a = i * 14;
-        int b = i * 51;
-        int c = i * 221;
-        ihct_vector_add(v, &a);
-        ihct_vector_add(v, &b);
-        ihct_vector_add(v, &c);
+    for(int i = 0; i < 9000000; ++i) {
+        int *t = malloc(sizeof(int));
+        *t = i * 2;
+        ihct_vector_add(v, t);
+    }
 
-        IHCT_ASSERT(&a == ihct_vector_get(v, 0));
-        IHCT_ASSERT(&b == ihct_vector_get(v, 1));
-        IHCT_ASSERT(&c == ihct_vector_get(v, 2));
+    for(int i = 0; i < 9000000; ++i) {
+        int *t = ihct_vector_get(v, i);
+        IHCT_ASSERT(i * 2 == *t);
+        free(t);
     }
 
     ihct_free_vector(v);
