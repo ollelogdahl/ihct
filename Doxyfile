@@ -10,7 +10,7 @@ MACRO_EXPANSION         = YES
 FILE_PATTERNS           = *.h
 MAX_INITIALIZER_LINES   = 0
 
-RECURSIVE               = INPUT
+RECURSIVE               = NO
 FULL_PATH_NAMES         = NO
 
 HIDE_UNDOC_MEMBERS      = YES
