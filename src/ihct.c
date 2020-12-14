@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 // A list of all units.
 ihct_vector *testunits;
@@ -45,7 +46,6 @@ void ihct_unit_free(ihct_unit *unit) {
 
 void ihct_init(void) {
     // atm, only initializes the unit list. Is this neccessary?
-    //ihct_init_unitlist();
     testunits = ihct_init_vector();
 }
 
@@ -108,6 +108,9 @@ int ihct_run(int argc, char **argv) {
 
     unsigned failed_count = 0;
 
+    // start clock
+    clock_t time_pretests = clock();
+
     // Iterate over every test
     for(unsigned i = 0; i < unit_count; i++) {
         ihct_unit *unit = ihct_vector_get(testunits, i);
@@ -123,6 +126,9 @@ int ihct_run(int argc, char **argv) {
         }
     }
     printf("\n%s", (failed_count > 0) ? "\n" : "");
+
+    clock_t time_posttests = clock();
+    double elapsed = (double)(time_posttests - time_pretests) / CLOCKS_PER_SEC;
 
     for(unsigned i = 0; i < unit_count; ++i) {
         ihct_unit *unit = ihct_vector_get(testunits, i);
@@ -142,7 +148,7 @@ int ihct_run(int argc, char **argv) {
     free(ihct_results);
     ihct_free_vector(testunits);
 
-    printf("\n");
+    printf("\ntests took %.2f seconds\n", elapsed);
     if(failed_count) {
         char *status_format = IHCT_FOREGROUND_GREEN "%d successful "
             IHCT_RESET "and "

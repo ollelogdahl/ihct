@@ -31,13 +31,6 @@ ihct_unit *ihct_init_unit(char *name, ihct_test_proc procedure);
 // Frees the created unit (does not remove it from the unit list).
 static void ihct_unit_free(ihct_unit *unit);
 
-// Basic linked-list implementation for listing all units.
-// Structure representing a single node in the testing unit list.
-typedef struct ihct_unitlist_node {
-    struct ihct_unitlist_node *next;
-    ihct_unit *unit;
-} ihct_unitlist_node;
-
 // Called within a test. 
 bool ihct_assert_impl(bool eval, ihct_test_result *result, char *code, char *file, 
                       unsigned long line);
@@ -173,11 +166,19 @@ void ihct_free_vector(ihct_vector *v);
 /// @code
 /// IHCT_TEST(basic_test)
 /// @param name the name of the test.
-#define IHCT_TEST(name)\
+#define IHCT_TEST(name)                                                                 \
     static void test_##name(ihct_test_result *result);                                  \
     static void __attribute__((constructor(102))) __construct_test_##name(void) {       \
         ihct_construct_test_impl(#name, test_##name);                                   \
     }                                                                                   \
     static void test_##name(ihct_test_result *result)
+
+/// @brief Defines a fixture with data to be preloaded before a test.
+/// A ficture is included by a IHCT_REQUIRE inside a test.
+#define IHCT_FIXTURE(name) blah
+
+/// @brief Make the test require the given fixtures.
+/// @param ... one or more fixture names.
+#define IHCT_REQUIRE(...) lel
 
 #endif
