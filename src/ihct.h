@@ -133,6 +133,11 @@ ihct_test_result *ihct_run_specific(ihct_unit *unit);
 
 /// @brief Runs all tests. Is to be called once in the main entrypoint.
 /// @ingroup funcs
+/// @code
+/// int main(int argc, char **argv) {
+///     return IHCT_RUN(argc, argv);
+/// }
+/// @endcode
 /// @param argc argument count, directly passed from main.
 /// @param argv argument array, directly passed from main.
 #define IHCT_RUN(argc, argv)                                                            \
