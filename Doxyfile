@@ -18,6 +18,9 @@ GENERATE_LATEX          = NO
 CLASS_DIAGRAMS          = NO
 EXAMPLE_PATH            = examples/
 
+DISABLE_INDEX           = YES
+GENERATE_TREEVIEW       = YES
+
 # apply 'that style'.
 HTML_HEADER            = header.html
 HTML_EXTRA_STYLESHEET  = that_style.css
