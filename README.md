@@ -3,6 +3,7 @@
 Olle Lögdahl, 13 December 2020
 
 ![make](https://img.shields.io/github/workflow/status/ollelogdahl/ihct/build)
+![docs](https://img.shields.io/github/workflow/status/ollelogdahl/ihct/Doxygen?label=docs)
 ![licence](https://img.shields.io/github/license/ollelogdahl/ihct)
 ![issues](https://img.shields.io/github/issues-raw/ollelogdahl/ihct)
 
