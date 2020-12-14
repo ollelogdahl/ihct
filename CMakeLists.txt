@@ -7,7 +7,7 @@ set(CMAKE_BUILD_TYPE Debug)
 
 add_executable(ihct
     src/ihct.c
-    src/ex.c
+    examples/ex.c
 )
 target_include_directories(ihct PUBLIC
     "${CMAKE_SOURCE_DIR}/src"

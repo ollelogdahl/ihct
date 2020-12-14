@@ -1,4 +1,4 @@
-#include "../src/ihct.h"
+#include "ihct.h"
 
 #include <string.h>
 #include <stdlib.h>

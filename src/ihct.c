@@ -6,6 +6,7 @@
 
 // A list of all units.
 ihct_unitlist *unit_list;
+ihct_vector *testunits;
 
 // An array of all first failed (or last if all successful) assert results in every test.
 ihct_test_result **ihct_results;
@@ -25,7 +26,8 @@ bool ihct_assert_impl(bool eval, ihct_test_result *result, char *code, char *fil
 
 void ihct_construct_test_impl(char *name, ihct_test_proc procedure) {
     ihct_unit *unit = ihct_init_unit(name, procedure);
-    ihct_unitlist_add(unit);
+    //ihct_unitlist_add(unit);
+    ihct_vector_add(testunits, unit);
 }
 
 ihct_unit *ihct_init_unit(char *name, ihct_test_proc procedure) {
@@ -76,7 +78,8 @@ void ihct_unitlist_add(ihct_unit *unit) {
 
 void ihct_init(void) {
     // atm, only initializes the unit list. Is this neccessary?
-    ihct_init_unitlist();
+    //ihct_init_unitlist();
+    testunits = ihct_init_vector();
 }
 
 static void ihct_unitlist_free(void) {
@@ -96,6 +99,10 @@ static void ihct_unitlist_free(void) {
 
 ihct_vector *ihct_init_vector() {
     ihct_vector *v = malloc(sizeof(ihct_vector));
+    if(v == NULL) {
+        printf("Couldn't allocate memory for vector.\n");
+        exit(EXIT_FAILURE);
+    }
     v->size = 0;
     v->data = NULL;
 }
@@ -103,9 +110,18 @@ void ihct_vector_add(ihct_vector *v, void *obj) {
     if(v->size == 0) {
         // Allocate a single 
         v->data = malloc(sizeof(obj));
+        if(v->data == NULL) {
+            printf("Couldn't allocate memory for object.\n");
+            exit(EXIT_FAILURE);
+        }
         v->data[0] = obj;
     } else {
-        v->data = realloc(v->data, v->size);
+        void *p = realloc(v->data, (v->size + 1) * sizeof(obj));
+        if(p == NULL) {
+            printf("Couldn't allocate memory for object.\n");
+            exit(EXIT_FAILURE);
+        }
+        v->data = p;
         v->data[v->size] = obj;
     }
     v->size++;
@@ -115,9 +131,9 @@ void *ihct_vector_get(ihct_vector *v, int index) {
 }
 void ihct_free_vector(ihct_vector *v) {
     free(v->data);
-    free(v);
     v->data = NULL;
-    v->size = NULL;
+    free(v);
+    v = NULL;
 }
 
 
@@ -135,15 +151,19 @@ ihct_test_result *ihct_run_specific(ihct_unit *unit) {
 
 int ihct_run(int argc, char **argv) {
     // Allocate results
-    ihct_results = calloc(unit_list->size, sizeof(ihct_test_result*));
+    //ihct_results = calloc(unit_list->size, sizeof(ihct_test_result*));
+    ihct_results = calloc(testunits->size, sizeof(ihct_test_result *));
 
     unsigned failed_count = 0;
+    unsigned unit_count = testunits->size;
 
-    ihct_unitlist_node *cur = unit_list->head;
-    for(unsigned i = 0; i < unit_list->size; i++) {
-        cur = cur->next;
+    //ihct_unitlist_node *cur = unit_list->head;
+    //for(unsigned i = 0; i < unit_list->size; i++) {
+    for(unsigned i = 0; i < testunits->size; i++) {
+        ihct_unit *unit = ihct_vector_get(testunits, i);
 
-        ihct_results[i] = ihct_run_specific(cur->unit);
+        //ihct_results[i] = ihct_run_specific(cur->unit);
+        ihct_results[i] = ihct_run_specific(unit);
 
         if(ihct_results[i]->passed) {
             printf(IHCT_BACKGROUND_GREEN IHCT_BOLD "." IHCT_RESET);
@@ -154,7 +174,10 @@ int ihct_run(int argc, char **argv) {
     }
     printf("\n%s", (failed_count > 0) ? "\n" : "");
 
-    for(unsigned i = 0; i < unit_list->size; ++i) {
+    //for(unsigned i = 0; i < unit_list->size; ++i) {
+    for(unsigned i = 0; i < testunits->size; ++i) {
+        ihct_unit *unit = ihct_vector_get(testunits, i);
+
         if(!ihct_results[i]->passed) {
             char *assertion_format = IHCT_BOLD "%s:%d: "
                 IHCT_RESET "assertion in '"
@@ -163,12 +186,14 @@ int ihct_run(int argc, char **argv) {
                 IHCT_FOREGROUND_YELLOW "%s"
                 IHCT_RESET "'\n";
             printf(assertion_format, ihct_results[i]->file, ihct_results[i]->line, 
-                cur->unit->name, ihct_results[i]->code);
+            //    cur->unit->name, ihct_results[i]->code);
+                unit->name, ihct_results[i]->code);
         }
     }
 
     free(ihct_results);
-    ihct_unitlist_free();
+    //ihct_unitlist_free();
+    ihct_free_vector(testunits);
 
     printf("\n");
     if(failed_count) {
@@ -178,21 +203,19 @@ int ihct_run(int argc, char **argv) {
             IHCT_RESET "of "
             IHCT_FOREGROUND_YELLOW "%d run"
             IHCT_RESET "\n";
-        printf(status_format, unit_list->size-failed_count, failed_count, 
-               unit_list->size);
-    } 
-    else {
-        char *status_format = IHCT_FOREGROUND_GREEN "%d successful "
-            IHCT_RESET "of "
-            IHCT_FOREGROUND_YELLOW "%d run"
-            IHCT_RESET "\n";
-        printf(status_format, unit_list->size, unit_list->size);
-    }
-
-    if(failed_count) {
+        printf(status_format, unit_count-failed_count, failed_count, 
+               unit_count);
+        
         printf(IHCT_FOREGROUND_RED "FAILURE\n" IHCT_RESET);
         return 1;
-    }
+    } 
+    
+    char *status_format = IHCT_FOREGROUND_GREEN "%d successful "
+        IHCT_RESET "of "
+        IHCT_FOREGROUND_YELLOW "%d run"
+        IHCT_RESET "\n";
+    printf(status_format, unit_count, unit_count);
+
     printf(IHCT_FOREGROUND_GREEN "SUCCESS\n" IHCT_RESET);
     return 0;
 }
