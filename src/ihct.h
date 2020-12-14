@@ -27,6 +27,7 @@ typedef struct {
 
 // Allocates a new unit node.
 ihct_unit *ihct_init_unit(char *name, ihct_test_proc procedure);
+
 // Frees the created unit (does not remove it from the unit list).
 static void ihct_unit_free(ihct_unit *unit);
 
@@ -37,39 +38,22 @@ typedef struct ihct_unitlist_node {
     ihct_unit *unit;
 } ihct_unitlist_node;
 
-// Structure representing a list of testing units. NOTE: program only contains one
-// instance of this list, where the implementation is specified to that instance.
-typedef struct {
-    ihct_unitlist_node *head;
-    unsigned size;
-} ihct_unitlist;
-
-// Initializes the list.
-static void ihct_init_unitlist(void);
-// Adds a node to the list. Does this in a first-in style, because the list is only 
-// forward linked. TODO: could we make it last-in, is there any point to it?
-void ihct_unitlist_add(ihct_unit *unit);
-// Frees the list and all contained nodes. Also calls ihct_unit_free.
-static void ihct_unitlist_free(void);
-
 // Called within a test. 
 bool ihct_assert_impl(bool eval, ihct_test_result *result, char *code, char *file, 
                       unsigned long line);
+
 // Called on test unit construction.
 void ihct_construct_test_impl(char *s, ihct_test_proc proc);
+
 // Runs all tests.
 int ihct_run(int argc, char **argv);
+
 // Initializes the unitlist (Has to be done before all testing units are created).
 // Using priority to ensure that the unit list is constructed before it gets populated.
 static void ihct_init(void) __attribute__((constructor(101)));
 
 // Run a specific testing unit.
 ihct_test_result *ihct_run_specific(ihct_unit *unit);
-
-
-
-
-
 
 // Datatype representing a vector. to be used internally in IHCT_RUN
 typedef struct {
@@ -79,10 +63,13 @@ typedef struct {
 
 // Allocates a new vector with capacity cap.
 ihct_vector *ihct_init_vector();
+
 // Add a pointer to a allocated object at the end of the vector.
 void ihct_vector_add(ihct_vector *v, void *obj);
+
 // Gets the object at location index in vector v.
 void *ihct_vector_get(ihct_vector *v, int index);
+
 // Deallocates the vector.
 void ihct_free_vector(ihct_vector *v);
 

@@ -5,7 +5,6 @@
 #include <string.h>
 
 // A list of all units.
-ihct_unitlist *unit_list;
 ihct_vector *testunits;
 
 // An array of all first failed (or last if all successful) assert results in every test.
@@ -26,13 +25,10 @@ bool ihct_assert_impl(bool eval, ihct_test_result *result, char *code, char *fil
 
 void ihct_construct_test_impl(char *name, ihct_test_proc procedure) {
     ihct_unit *unit = ihct_init_unit(name, procedure);
-    //ihct_unitlist_add(unit);
     ihct_vector_add(testunits, unit);
 }
 
 ihct_unit *ihct_init_unit(char *name, ihct_test_proc procedure) {
-    //printf("Constructing new unit: %s\n", name);
-
     ihct_unit *unit = (ihct_unit *)malloc(sizeof(ihct_unit));
     char *strmem = malloc(strlen(name) + 1);
     strcpy(strmem, name);
@@ -47,51 +43,10 @@ void ihct_unit_free(ihct_unit *unit) {
     free(unit);
 }
 
-static void ihct_init_unitlist(void) {
-    // initialize the unit_list head, which points at itself
-    // and doesn't have a unit.
-    unit_list = malloc(sizeof(ihct_unitlist));
-
-    ihct_unitlist_node *head = malloc(sizeof(ihct_unitlist_node));
-    head->next = head;
-    head->unit = NULL;
-
-    unit_list->head = head;
-    unit_list->size = 0;
-}
-
-void ihct_unitlist_add(ihct_unit *unit) {
-    // Before:          After
-    // ┌────┐   ┌─┐     ┌────┐   ┌────┐   ┌─┐
-    // │head│-->│a|     │head│-->│node|-->│a|
-    // └────┘   └─┘     └────┘   └────┘   └─┘
-
-    // Allocate a new node
-    ihct_unitlist_node *node = malloc(sizeof(ihct_unitlist_node));
-
-    // Assign pointers
-    node->next = unit_list->head->next;
-    unit_list->head->next = node;
-    unit_list->head->next->unit = unit;
-    unit_list->size++;
-}
-
 void ihct_init(void) {
     // atm, only initializes the unit list. Is this neccessary?
     //ihct_init_unitlist();
     testunits = ihct_init_vector();
-}
-
-static void ihct_unitlist_free(void) {
-    ihct_unitlist_node *cur = unit_list->head;
-    for(unsigned i = 0; i < unit_list->size; i++) {
-        ihct_unitlist_node *prev = cur;
-        cur = cur->next;
-
-        ihct_unit_free(cur->unit);
-        free(prev);
-    }
-    free(unit_list);
 }
 
 
@@ -150,16 +105,14 @@ ihct_test_result *ihct_run_specific(ihct_unit *unit) {
 }
 
 int ihct_run(int argc, char **argv) {
+    unsigned unit_count = testunits->size;
     // Allocate results
-    //ihct_results = calloc(unit_list->size, sizeof(ihct_test_result*));
-    ihct_results = calloc(testunits->size, sizeof(ihct_test_result *));
+    ihct_results = calloc(unit_count, sizeof(ihct_test_result *));
 
     unsigned failed_count = 0;
-    unsigned unit_count = testunits->size;
 
-    //ihct_unitlist_node *cur = unit_list->head;
-    //for(unsigned i = 0; i < unit_list->size; i++) {
-    for(unsigned i = 0; i < testunits->size; i++) {
+    // Iterate over every test
+    for(unsigned i = 0; i < unit_count; i++) {
         ihct_unit *unit = ihct_vector_get(testunits, i);
 
         //ihct_results[i] = ihct_run_specific(cur->unit);
@@ -174,8 +127,7 @@ int ihct_run(int argc, char **argv) {
     }
     printf("\n%s", (failed_count > 0) ? "\n" : "");
 
-    //for(unsigned i = 0; i < unit_list->size; ++i) {
-    for(unsigned i = 0; i < testunits->size; ++i) {
+    for(unsigned i = 0; i < unit_count; ++i) {
         ihct_unit *unit = ihct_vector_get(testunits, i);
 
         if(!ihct_results[i]->passed) {
@@ -186,13 +138,11 @@ int ihct_run(int argc, char **argv) {
                 IHCT_FOREGROUND_YELLOW "%s"
                 IHCT_RESET "'\n";
             printf(assertion_format, ihct_results[i]->file, ihct_results[i]->line, 
-            //    cur->unit->name, ihct_results[i]->code);
-                unit->name, ihct_results[i]->code);
+                   unit->name, ihct_results[i]->code);
         }
     }
 
     free(ihct_results);
-    //ihct_unitlist_free();
     ihct_free_vector(testunits);
 
     printf("\n");
