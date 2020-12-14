@@ -60,7 +60,6 @@ static void ihct_init_unitlist(void) {
 }
 
 void ihct_unitlist_add(ihct_unit *unit) {
-    printf("Called add unit\n");
     // Before:          After
     // ┌────┐   ┌─┐     ┌────┐   ┌────┐   ┌─┐
     // │head│-->│a|     │head│-->│node|-->│a|
@@ -77,7 +76,6 @@ void ihct_unitlist_add(ihct_unit *unit) {
 }
 
 void ihct_init(void) {
-    printf("Called init\n");
     // atm, only initializes the unit list. Is this neccessary?
     ihct_init_unitlist();
 }
@@ -121,9 +119,10 @@ int ihct_run(int argc, char **argv) {
             printf(IHCT_BACKGROUND_GREEN IHCT_BOLD "." IHCT_RESET);
         } else {
             printf(IHCT_BACKGROUND_RED IHCT_BOLD "!" IHCT_RESET);
+            failed_count++;
         }
     }
-    printf("\n\n");
+    printf("\n%s", (failed_count > 0) ? "\n" : "");
 
     for(unsigned i = 0; i < unit_list->size; ++i) {
         if(!ihct_results[i]->passed) {
@@ -135,7 +134,6 @@ int ihct_run(int argc, char **argv) {
                 IHCT_RESET "'\n";
             printf(assertion_format, ihct_results[i]->file, ihct_results[i]->line, 
                 cur->unit->name, ihct_results[i]->code);
-            failed_count++;
         }
     }
 
