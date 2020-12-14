@@ -1,4 +1,4 @@
-/// @file
+
 
 #ifndef IHCT_H
 #define IHCT_H
