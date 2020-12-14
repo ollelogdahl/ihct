@@ -22,16 +22,16 @@ DISABLE_INDEX           = YES
 GENERATE_TREEVIEW       = YES
 
 # apply 'that style'.
-HTML_HEADER            = header.html
-HTML_EXTRA_STYLESHEET  = that_style.css
-HTML_EXTRA_FILES       = nav_edge_left.svg \
-                         nav_edge_right.svg \
-                         nav_edge_inter.svg \
-                         sync_off.png \
-                         sync_on.png \
-                         splitbar_handle.svg \
-                         doc.svg \
-                         mag_glass.svg \
-                         folderclosed.svg \
-                         folderopen.svg \
-                         striped_bg.js
+HTML_HEADER            = that_style/header.html
+HTML_EXTRA_STYLESHEET  = that_style/that_style.css
+HTML_EXTRA_FILES       = that_style/img/nav_edge_left.svg \
+                         that_style/img/nav_edge_right.svg \
+                         that_style/img/nav_edge_inter.svg \
+                         that_style/img/sync_off.png \
+                         that_style/img/sync_on.png \
+                         that_style/img/splitbar_handle.svg \
+                         that_style/img/doc.svg \
+                         that_style/img/mag_glass.svg \
+                         that_style/img/folderclosed.svg \
+                         that_style/img/folderopen.svg \
+                         that_style/js/striped_bg.js
