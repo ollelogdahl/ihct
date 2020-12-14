@@ -13,6 +13,8 @@ logical and light. Looking for more features, so please give any suggestions.
 
 ## Installation & Usage
 
+#### See [documentation](https://ollelogdahl.github.io/ihct/)
+
 To use this framework, include `ihct.h` and `ihct.c` in your project. See `ex.c` for an extended example.
 The test creates it's own executable, and therefore needs an entrypoint. The following code should get you started.
 
