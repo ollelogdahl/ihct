@@ -18,7 +18,6 @@ GENERATE_LATEX          = NO
 CLASS_DIAGRAMS          = NO
 EXAMPLE_PATH            = examples/
 
-DISABLE_INDEX           = YES
 GENERATE_TREEVIEW       = YES
 
 # apply 'that style'.
