@@ -36,9 +36,9 @@ static void ihct_setup_recover_action() {
 
 void ihct_print_result(ihct_test_result *result) {
     switch (result->status) {
-    case FAIL: printf(IHCT_BACKGROUND_RED IHCT_BOLD ":" IHCT_RESET); break;
-    case PASS: printf(IHCT_BACKGROUND_GREEN IHCT_BOLD "." IHCT_RESET); break;
-    case ERR: printf(IHCT_BACKGROUND_RED IHCT_BOLD "!" IHCT_RESET); break;
+    case FAIL: printf(IHCT_BG_RED IHCT_BOLD ":" IHCT_RESET); break;
+    case PASS: printf(IHCT_BG_GREEN IHCT_BOLD "." IHCT_RESET); break;
+    case ERR: printf(IHCT_BG_RED IHCT_BOLD "!" IHCT_RESET); break;
     }
 }
 // Reallocates and appends string s to summary_str
@@ -52,9 +52,9 @@ void ihct_add_error_to_summary(ihct_test_result *res, ihct_unit *unit) {
         IHCT_RESET "assertion in '"
         IHCT_BOLD "%s"
         IHCT_RESET "' "
-        IHCT_FOREGROUND_RED "failed"
+        IHCT_FG_RED "failed"
         IHCT_RESET ":\n\t'"
-        IHCT_FOREGROUND_YELLOW "%s"
+        IHCT_FG_YELLOW "%s"
         IHCT_RESET "'\n";
     size_t msg_size = snprintf(NULL, 0, assertion_format, res->file, res->line, 
            unit->name, res->code) + 1;
@@ -153,7 +153,7 @@ ihct_test_result *ihct_run_specific(ihct_unit *unit) {
         char *msg_format = "unit '"
             IHCT_BOLD "%s"
             IHCT_RESET "' had to restore because of fatal signal ("
-            IHCT_FOREGROUND_RED "%s"
+            IHCT_FG_RED "%s"
             IHCT_RESET ")\n";
         size_t msg_size = snprintf(NULL, 0, msg_format, unit->name, strsignal(status)) + 1;
         char *msg = calloc(msg_size, sizeof(char));
@@ -213,26 +213,26 @@ int ihct_run(int argc, char **argv) {
 
     printf("\ntests took %.2f seconds\n", elapsed);
     if(failed_count) {
-        char *status_format = IHCT_FOREGROUND_GREEN "%d successful "
+        char *status_format = IHCT_FG_GREEN "%d successful "
             IHCT_RESET "and "
-            IHCT_FOREGROUND_RED "%d failed "
+            IHCT_FG_RED "%d failed "
             IHCT_RESET "of "
-            IHCT_FOREGROUND_YELLOW "%d run"
+            IHCT_FG_YELLOW "%d run"
             IHCT_RESET "\n";
         printf(status_format, unit_count-failed_count, failed_count, 
                unit_count);
         
-        printf(IHCT_FOREGROUND_RED "FAILURE\n" IHCT_RESET);
+        printf(IHCT_FG_RED "FAILURE\n" IHCT_RESET);
         return 1;
     } 
     
-    char *status_format = IHCT_FOREGROUND_GREEN "%d successful "
+    char *status_format = IHCT_FG_GREEN "%d successful "
         IHCT_RESET "of "
-        IHCT_FOREGROUND_YELLOW "%d run"
+        IHCT_FG_YELLOW "%d run"
         IHCT_RESET "\n";
     printf(status_format, unit_count, unit_count);
 
-    printf(IHCT_FOREGROUND_GREEN "SUCCESS\n" IHCT_RESET);
+    printf(IHCT_FG_GREEN "SUCCESS\n" IHCT_RESET);
     return 0;
 }
 
