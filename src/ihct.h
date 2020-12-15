@@ -11,7 +11,7 @@
 // Structure for a testunits return value. Contains state, the code (assert) which
 // failed the test, and a reference to where the code is.
 typedef struct {
-    bool passed;
+    enum {FAIL, PASS, ERR} status;
     char *code;
     char *file;
     unsigned long line;

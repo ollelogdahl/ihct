@@ -7,35 +7,65 @@
 #include <setjmp.h>
 
 // The point of which to restore to on a fatal signal.
-jmp_buf restore_point;
-void *last_signal_context;
+jmp_buf restore_environment;
+// the sigaction used for catching fatal signals.
 struct sigaction recover_action;
+// The final summary string printed.
+char *summary_str;
+// A list of all units.
+static ihct_vector *testunits;
+// An array of all first failed (or last if all successful) assert results in every test.
+static ihct_test_result **ihct_results;
 
-char *summary_extra_str;
-
-// Handle when a signal is thrown
+// Procedure called when a signal is thrown within a test. When a fatal signal is
+// recieved, we jump back to before the test is ran, giving the signal code.
 static void ihct_recovery_proc(int sig, siginfo_t *siginfo, void *context) {
-    last_signal_context = context;
-    longjmp(restore_point, sig);
+    longjmp(restore_environment, sig);
 }
 
+// Binds the sigaction to signals, and make it call ihct_recovery_proc.
 static void ihct_setup_recover_action() {
     recover_action.sa_sigaction = &ihct_recovery_proc;
     sigemptyset(&recover_action.sa_mask);
     recover_action.sa_flags = SA_SIGINFO;
+    // binding sigactions
     sigaction(SIGSEGV, &recover_action, NULL);
     sigaction(SIGTERM, &recover_action, NULL);
 }
 
-// A list of all units.
-static ihct_vector *testunits;
 
-// An array of all first failed (or last if all successful) assert results in every test.
-static ihct_test_result **ihct_results;
+void ihct_print_result(ihct_test_result *result) {
+    switch (result->status) {
+    case FAIL: printf(IHCT_BACKGROUND_RED IHCT_BOLD ":" IHCT_RESET); break;
+    case PASS: printf(IHCT_BACKGROUND_GREEN IHCT_BOLD "." IHCT_RESET); break;
+    case ERR: printf(IHCT_BACKGROUND_RED IHCT_BOLD "!" IHCT_RESET); break;
+    }
+}
+// Reallocates and appends string s to summary_str
+void ihct_add_to_summary(char *s) {
+    char *p = realloc(summary_str, strlen(summary_str) + strlen(s));
+    summary_str = p;
+    strcat(summary_str, s);
+}
+void ihct_add_error_to_summary(ihct_test_result *res, ihct_unit *unit) {
+    char *assertion_format = IHCT_BOLD "%s:%d: "
+        IHCT_RESET "assertion in '"
+        IHCT_BOLD "%s"
+        IHCT_RESET "' "
+        IHCT_FOREGROUND_RED "failed"
+        IHCT_RESET ":\n\t'"
+        IHCT_FOREGROUND_YELLOW "%s"
+        IHCT_RESET "'\n";
+    size_t msg_size = snprintf(NULL, 0, assertion_format, res->file, res->line, 
+           unit->name, res->code) + 1;
+    char *msg = calloc(msg_size, sizeof(char));
+    sprintf(msg, assertion_format, res->file, res->line, unit->name, res->code);
+    ihct_add_to_summary(msg);
+}
 
 bool ihct_assert_impl(bool eval, ihct_test_result *result, char *code, char *file, 
                       unsigned long line) {
-    result->passed = eval;
+    result->status = eval;
 
     if(!eval) {
         result->file = file;
@@ -112,13 +142,13 @@ void ihct_free_vector(ihct_vector *v) {
 ihct_test_result *ihct_run_specific(ihct_unit *unit) {
     // Allocate memory for the tests result, and set it to passed by default.
     ihct_test_result *result = malloc(sizeof(ihct_test_result));
-    result->passed = true;
+    result->status = true;
 
     // Create a signal handler.
     ihct_setup_recover_action();
 
     // Create a jump point, to be able to resute when encountering segfault.
-    int status = setjmp(restore_point);
+    int status = setjmp(restore_environment);
     if(status != 0) {
         char *msg_format = "unit '"
             IHCT_BOLD "%s"
@@ -127,15 +157,14 @@ ihct_test_result *ihct_run_specific(ihct_unit *unit) {
             IHCT_RESET ")\n";
         size_t msg_size = snprintf(NULL, 0, msg_format, unit->name, strsignal(status)) + 1;
         char *msg = calloc(msg_size, sizeof(char));
-        char *p = realloc(summary_extra_str, strlen(summary_extra_str) + msg_size);
-        summary_extra_str = p;
         sprintf(msg, msg_format, unit->name, strsignal(status));
-        strcat(summary_extra_str, msg);
+        ihct_add_to_summary(msg);
 
+        // Create an empty result
         result->code = "";
         result->file = "";
         result->line = 0;
-        result->passed = false;
+        result->status = ERR;
         return result;
     }
 
@@ -152,7 +181,8 @@ int ihct_run(int argc, char **argv) {
 
     unsigned failed_count = 0;
 
-    summary_extra_str = calloc(0, sizeof(char));
+    // initialize the summary string
+    summary_str = calloc(0, sizeof(char));
 
     // start clock
     clock_t time_pretests = clock();
@@ -163,36 +193,20 @@ int ihct_run(int argc, char **argv) {
 
         ihct_results[i] = ihct_run_specific(unit);
 
-        if(ihct_results[i]->passed) {
-            printf(IHCT_BACKGROUND_GREEN IHCT_BOLD "." IHCT_RESET);
-        } else {
-            printf(IHCT_BACKGROUND_RED IHCT_BOLD "!" IHCT_RESET);
+        ihct_print_result(ihct_results[i]);
+
+        if(ihct_results[i]->status != PASS) {
             failed_count++;
         }
+        if(ihct_results[i]->status == FAIL) {
+            ihct_add_error_to_summary(ihct_results[i], unit);
+        }
     }
-    printf("\n%s", (failed_count > 0) ? "\n" : "");
-
-    printf(summary_extra_str);
-
     clock_t time_posttests = clock();
     double elapsed = (double)(time_posttests - time_pretests) / CLOCKS_PER_SEC;
 
-    for(unsigned i = 0; i < unit_count; ++i) {
-        ihct_unit *unit = ihct_vector_get(testunits, i);
-
-        if(!ihct_results[i]->passed) {
-            char *assertion_format = IHCT_BOLD "%s:%d: "
-                IHCT_RESET "assertion in '"
-                IHCT_BOLD "%s"
-                IHCT_RESET "' "
-                IHCT_FOREGROUND_RED "failed"
-                IHCT_RESET ":\n\t'"
-                IHCT_FOREGROUND_YELLOW "%s"
-                IHCT_RESET "'\n";
-            printf(assertion_format, ihct_results[i]->file, ihct_results[i]->line, 
-                   unit->name, ihct_results[i]->code);
-        }
-    }
+    // print status
+    printf("\n%s%s", (failed_count > 0) ? "\n" : "", summary_str);
 
     free(ihct_results);
     ihct_free_vector(testunits);
@@ -246,8 +260,8 @@ IHCT_TEST(self_unit_run) {
     ihct_unit *u2 = ihct_init_unit("internal_false", &itest_false);
     ihct_test_result *res1 = ihct_run_specific(u1);
     ihct_test_result *res2 = ihct_run_specific(u2);
-    IHCT_ASSERT(res1->passed);
-    IHCT_NASSERT(res2->passed);
+    IHCT_ASSERT(res1->status == 1);
+    IHCT_NASSERT(res2->status == 1);
 }
 
 IHCT_TEST(self_vector_create) {
