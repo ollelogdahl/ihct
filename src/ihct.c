@@ -172,14 +172,28 @@ int ihct_run(int argc, char **argv) {
 // IHCT_TEST_SELF. Still requires an external main entrypoint.
 #ifdef IHCT_TEST_SELF
 
-IHCT_TEST(self_minimal) {
-    IHCT_ASSERT(1 == 1);
+// Create two internal test procedures
+static void itest_true(ihct_test_result *result) {
+    IHCT_ASSERT(true);
+}
+static void itest_false(ihct_test_result *result) {
+    IHCT_ASSERT(false);
 }
 
+
 IHCT_TEST(self_unit_create) {
-    ihct_unit *u = ihct_init_unit("test", &test_self_minimal);
-    IHCT_ASSERT_STR(u->name, "test");
-    IHCT_ASSERT(&test_self_minimal == u->procedure);
+    ihct_unit *u = ihct_init_unit("internal_true", &itest_true);
+    IHCT_ASSERT_STR(u->name, "internal_true");
+    IHCT_ASSERT(&itest_true == u->procedure);
+}
+
+IHCT_TEST(self_unit_run) {
+    ihct_unit *u1 = ihct_init_unit("internal_true", &itest_true);
+    ihct_unit *u2 = ihct_init_unit("internal_false", &itest_false);
+    ihct_test_result *res1 = ihct_run_specific(u1);
+    ihct_test_result *res2 = ihct_run_specific(u2);
+    IHCT_ASSERT(res1->passed);
+    IHCT_NASSERT(res2->passed);
 }
 
 IHCT_TEST(self_vector_create) {
