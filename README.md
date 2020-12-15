@@ -41,9 +41,12 @@ int main(int argc, char **argv) {
 
 The example `ex.c` can be compiled with by running:
 ```bash
-cd ihct
-make
+mkdir build
+cd build
+cmake .. && make -j4
 ```
+
+Self tests can be run along with own tests by adding compiler flag `-DIHCT_SELF_TEST`.
 
 ---
 
