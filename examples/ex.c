@@ -40,24 +40,6 @@ IHCT_TEST(strings_more) {
     IHCT_ASSERT_STR("eee", "eee");
 }
 
-IHCT_TEST(self_vector_all) {
-    ihct_vector *v = ihct_init_vector();
-
-    for(int i = 0; i < 9000000; ++i) {
-        int *t = malloc(sizeof(int));
-        *t = i * 2;
-        ihct_vector_add(v, t);
-    }
-
-    for(int i = 0; i < 9000000; ++i) {
-        int *t = ihct_vector_get(v, i);
-        IHCT_ASSERT(i * 2 == *t);
-        free(t);
-    }
-
-    ihct_free_vector(v);
-}
-
 int main(int argc, char **argv) {
     return IHCT_RUN(argc, argv);
 }

@@ -6,10 +6,10 @@
 #include <time.h>
 
 // A list of all units.
-ihct_vector *testunits;
+static ihct_vector *testunits;
 
 // An array of all first failed (or last if all successful) assert results in every test.
-ihct_test_result **ihct_results;
+static ihct_test_result **ihct_results;
 
 bool ihct_assert_impl(bool eval, ihct_test_result *result, char *code, char *file, 
                       unsigned long line) {
@@ -172,3 +172,25 @@ int ihct_run(int argc, char **argv) {
     printf(IHCT_FOREGROUND_GREEN "SUCCESS\n" IHCT_RESET);
     return 0;
 }
+
+// Lets the program run tests on itself. This is done with the compiler flag
+// IHCT_TEST_SELF. Still requires an external main entrypoint.
+#ifdef IHCT_TEST_SELF
+IHCT_TEST(self_vector_all) {
+    ihct_vector *v = ihct_init_vector();
+
+    for(int i = 0; i < 9000000; ++i) {
+        int *t = malloc(sizeof(int));
+        *t = i * 2;
+        ihct_vector_add(v, t);
+    }
+
+    for(int i = 0; i < 9000000; ++i) {
+        int *t = ihct_vector_get(v, i);
+        IHCT_ASSERT(i * 2 == *t);
+        free(t);
+    }
+
+    ihct_free_vector(v);
+}
+#endif

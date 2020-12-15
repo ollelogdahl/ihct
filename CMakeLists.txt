@@ -5,6 +5,8 @@ set(CMAKE_CC_FLAGS "-Wall -Wfatal-errors")
 set(CMAKE_CC_STANDARD 99)
 set(CMAKE_BUILD_TYPE Debug)
 
+add_compile_definitions(IHCT_TEST_SELF)
+
 add_executable(ihct
     src/ihct.c
     examples/ex.c

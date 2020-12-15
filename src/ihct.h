@@ -26,7 +26,7 @@ typedef struct {
 } ihct_unit;
 
 // Allocates a new unit node.
-ihct_unit *ihct_init_unit(char *name, ihct_test_proc procedure);
+static ihct_unit *ihct_init_unit(char *name, ihct_test_proc procedure);
 
 // Frees the created unit (does not remove it from the unit list).
 static void ihct_unit_free(ihct_unit *unit);
@@ -46,7 +46,7 @@ int ihct_run(int argc, char **argv);
 static void ihct_init(void) __attribute__((constructor(101)));
 
 // Run a specific testing unit.
-ihct_test_result *ihct_run_specific(ihct_unit *unit);
+static ihct_test_result *ihct_run_specific(ihct_unit *unit);
 
 // Datatype representing a vector. to be used internally in IHCT_RUN
 typedef struct {
@@ -55,16 +55,16 @@ typedef struct {
 } ihct_vector;
 
 // Allocates a new vector with capacity cap.
-ihct_vector *ihct_init_vector();
+static ihct_vector *ihct_init_vector();
 
 // Add a pointer to a allocated object at the end of the vector.
-void ihct_vector_add(ihct_vector *v, void *obj);
+static void ihct_vector_add(ihct_vector *v, void *obj);
 
 // Gets the object at location index in vector v.
-void *ihct_vector_get(ihct_vector *v, int index);
+static void *ihct_vector_get(ihct_vector *v, int index);
 
 // Deallocates the vector.
-void ihct_free_vector(ihct_vector *v);
+static void ihct_free_vector(ihct_vector *v);
 
 // These are ISO/IEC 6429 escape sequences for
 // communicating text attributes to terminal emulators.
