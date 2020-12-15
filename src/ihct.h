@@ -170,7 +170,7 @@ static void ihct_free_vector(ihct_vector *v);
 #define IHCT_TEST(name)                                                                 \
     static void test_##name(ihct_test_result *result);                                  \
     static void __attribute__((constructor(102))) __construct_test_##name(void) {       \
-        ihct_construct_test_impl(#name, test_##name);                                   \
+        ihct_construct_test_impl(#name, &test_##name);                                   \
     }                                                                                   \
     static void test_##name(ihct_test_result *result)
 
