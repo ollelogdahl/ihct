@@ -35,6 +35,7 @@ static void ihct_setup_recover_action() {
     sigaction(SIGFPE, &recover_action, NULL);
     sigaction(SIGILL, &recover_action, NULL);
     sigaction(SIGABRT, &recover_action, NULL);
+    sigaction(SIGBUS, &recover_action, NULL);
 }
 
 
