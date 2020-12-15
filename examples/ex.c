@@ -33,6 +33,11 @@ IHCT_TEST(strings_more) {
     IHCT_ASSERT_STR("eee", "eee");
 }
 
+IHCT_TEST(sigsegv_test) {
+    int *p = NULL;
+    *p = 3;
+}
+
 int main(int argc, char **argv) {
     return IHCT_RUN(argc, argv);
 }

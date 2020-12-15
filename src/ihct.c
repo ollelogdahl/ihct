@@ -4,6 +4,28 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <setjmp.h>
+
+// The point of which to restore to on a fatal signal.
+jmp_buf restore_point;
+void *last_signal_context;
+struct sigaction recover_action;
+
+char *summary_extra_str;
+
+// Handle when a signal is thrown
+static void ihct_recovery_proc(int sig, siginfo_t *siginfo, void *context) {
+    last_signal_context = context;
+    longjmp(restore_point, sig);
+}
+
+static void ihct_setup_recover_action() {
+    recover_action.sa_sigaction = &ihct_recovery_proc;
+    sigemptyset(&recover_action.sa_mask);
+    recover_action.sa_flags = SA_SIGINFO;
+    sigaction(SIGSEGV, &recover_action, NULL);
+    sigaction(SIGTERM, &recover_action, NULL);
+}
 
 // A list of all units.
 static ihct_vector *testunits;
@@ -91,6 +113,32 @@ ihct_test_result *ihct_run_specific(ihct_unit *unit) {
     // Allocate memory for the tests result, and set it to passed by default.
     ihct_test_result *result = malloc(sizeof(ihct_test_result));
     result->passed = true;
+
+    // Create a signal handler.
+    ihct_setup_recover_action();
+
+    // Create a jump point, to be able to resute when encountering segfault.
+    int status = setjmp(restore_point);
+    if(status != 0) {
+        char *msg_format = "unit '"
+            IHCT_BOLD "%s"
+            IHCT_RESET "' had to restore because of fatal signal ("
+            IHCT_FOREGROUND_RED "%s"
+            IHCT_RESET ")\n";
+        size_t msg_size = snprintf(NULL, 0, msg_format, unit->name, strsignal(status)) + 1;
+        char *msg = calloc(msg_size, sizeof(char));
+        char *p = realloc(summary_extra_str, strlen(summary_extra_str) + msg_size);
+        summary_extra_str = p;
+        sprintf(msg, msg_format, unit->name, strsignal(status));
+        strcat(summary_extra_str, msg);
+
+        result->code = "";
+        result->file = "";
+        result->line = 0;
+        result->passed = false;
+        return result;
+    }
+
     // Run test, and save it's result into i.
     (*unit->procedure)(result);
 
@@ -103,6 +151,8 @@ int ihct_run(int argc, char **argv) {
     ihct_results = calloc(unit_count, sizeof(ihct_test_result *));
 
     unsigned failed_count = 0;
+
+    summary_extra_str = calloc(0, sizeof(char));
 
     // start clock
     clock_t time_pretests = clock();
@@ -122,6 +172,8 @@ int ihct_run(int argc, char **argv) {
     }
     printf("\n%s", (failed_count > 0) ? "\n" : "");
 
+    printf(summary_extra_str);
+
     clock_t time_posttests = clock();
     double elapsed = (double)(time_posttests - time_pretests) / CLOCKS_PER_SEC;
 
@@ -132,7 +184,9 @@ int ihct_run(int argc, char **argv) {
             char *assertion_format = IHCT_BOLD "%s:%d: "
                 IHCT_RESET "assertion in '"
                 IHCT_BOLD "%s"
-                IHCT_RESET "' failed:\n\t'"
+                IHCT_RESET "' "
+                IHCT_FOREGROUND_RED "failed"
+                IHCT_RESET ":\n\t'"
                 IHCT_FOREGROUND_YELLOW "%s"
                 IHCT_RESET "'\n";
             printf(assertion_format, ihct_results[i]->file, ihct_results[i]->line, 
