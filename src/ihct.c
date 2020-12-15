@@ -30,7 +30,11 @@ static void ihct_setup_recover_action() {
     recover_action.sa_flags = SA_SIGINFO;
     // binding sigactions
     sigaction(SIGSEGV, &recover_action, NULL);
+    sigaction(SIGINT, &recover_action, NULL);
     sigaction(SIGTERM, &recover_action, NULL);
+    sigaction(SIGFPE, &recover_action, NULL);
+    sigaction(SIGILL, &recover_action, NULL);
+    sigaction(SIGABRT, &recover_action, NULL);
 }
 
 
