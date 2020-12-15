@@ -85,16 +85,12 @@ void ihct_free_vector(ihct_vector *v) {
     free(v->data);
     v->data = NULL;
     free(v);
-    v = NULL;
 }
 
-
-
-
 ihct_test_result *ihct_run_specific(ihct_unit *unit) {
-    // Allocate memory for the tests result.
-
+    // Allocate memory for the tests result, and set it to passed by default.
     ihct_test_result *result = malloc(sizeof(ihct_test_result));
+    result->passed = true;
     // Run test, and save it's result into i.
     (*unit->procedure)(result);
 
@@ -115,7 +111,6 @@ int ihct_run(int argc, char **argv) {
     for(unsigned i = 0; i < unit_count; i++) {
         ihct_unit *unit = ihct_vector_get(testunits, i);
 
-        //ihct_results[i] = ihct_run_specific(cur->unit);
         ihct_results[i] = ihct_run_specific(unit);
 
         if(ihct_results[i]->passed) {
@@ -176,16 +171,37 @@ int ihct_run(int argc, char **argv) {
 // Lets the program run tests on itself. This is done with the compiler flag
 // IHCT_TEST_SELF. Still requires an external main entrypoint.
 #ifdef IHCT_TEST_SELF
+
+IHCT_TEST(self_minimal) {
+    IHCT_ASSERT(1 == 1);
+}
+
+IHCT_TEST(self_unit_create) {
+    ihct_unit *u = ihct_init_unit("test", &test_self_minimal);
+    IHCT_ASSERT_STR(u->name, "test");
+    IHCT_ASSERT(&test_self_minimal == u->procedure);
+}
+
+IHCT_TEST(self_vector_create) {
+    ihct_vector *v = ihct_init_vector();
+
+    IHCT_ASSERT(v != NULL);
+    IHCT_ASSERT(v->data == NULL);
+    IHCT_ASSERT(v->size == 0);
+
+    ihct_free_vector(v);
+}
+
 IHCT_TEST(self_vector_all) {
     ihct_vector *v = ihct_init_vector();
 
-    for(int i = 0; i < 9000000; ++i) {
+    for(int i = 0; i < 1000; ++i) {
         int *t = malloc(sizeof(int));
         *t = i * 2;
         ihct_vector_add(v, t);
     }
 
-    for(int i = 0; i < 9000000; ++i) {
+    for(int i = 0; i < 1000; ++i) {
         int *t = ihct_vector_get(v, i);
         IHCT_ASSERT(i * 2 == *t);
         free(t);

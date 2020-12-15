@@ -5,6 +5,7 @@
 
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 
 // Structure for a testunits return value. Contains state, the code (assert) which
 // failed the test, and a reference to where the code is.

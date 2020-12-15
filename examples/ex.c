@@ -1,9 +1,5 @@
 #include "ihct.h"
 
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-
 IHCT_TEST(arithmetic_addition_basic) {
     IHCT_ASSERT(1 + 2 == 3);
     IHCT_ASSERT(4 + 2 == 6);
@@ -21,9 +17,6 @@ IHCT_TEST(arithmetic_multiplication) {
 }
 
 IHCT_TEST(strings_basic) {
-    IHCT_NASSERT(strcmp("abba", "abba"));
-    IHCT_ASSERT(strcmp("abba", "Abba"));
-
     IHCT_ASSERT_STR("abba", "abba");
     IHCT_NASSERT_STR("Alfa", "adolf");
 }
