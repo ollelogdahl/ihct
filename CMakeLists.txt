@@ -5,6 +5,8 @@ set(CMAKE_CC_FLAGS "-Wall -Wextra -pedantic -Wfatal-errors")
 set(CMAKE_CC_STANDARD 99)
 set(CMAKE_BUILD_TYPE Debug)
 
+find_package(Threads REQUIRED)
+
 add_compile_definitions(IHCT_TEST_SELF)
 
 add_executable(ihct
@@ -14,3 +16,4 @@ add_executable(ihct
 target_include_directories(ihct PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
+target_link_libraries(ihct PRIVATE Threads::Threads)

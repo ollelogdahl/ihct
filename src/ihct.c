@@ -5,6 +5,9 @@
 #include <string.h>
 #include <time.h>
 #include <setjmp.h>
+#include <signal.h> // handle tests that yield fatal signals.
+#include <errno.h>
+#include <pthread.h>
 
 // The point of which to restore to on a fatal signal.
 jmp_buf restore_environment;
@@ -17,20 +20,11 @@ static ihct_vector *testunits;
 // An array of all first failed (or last if all successful) assert results in every test.
 static ihct_test_result **ihct_results;
 
-// Procedure called when a signal is thrown within a test. When a fatal signal is
-// recieved, we jump back to before the test is ran, giving the signal code.
-static void ihct_recovery_proc(int sig, siginfo_t *siginfo, void *context) {
-    longjmp(restore_environment, sig);
-}
+pthread_cond_t routine_done = PTHREAD_COND_INITIALIZER;
+pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
-// Binds the sigaction to signals, and make it call ihct_recovery_proc.
-static void ihct_setup_recover_action() {
-    recover_action.sa_sigaction = &ihct_recovery_proc;
-    sigemptyset(&recover_action.sa_mask);
-    recover_action.sa_flags = SA_SIGINFO;
-    // binding sigactions
+static void ihct_set_sigaction(void) {
     sigaction(SIGSEGV, &recover_action, NULL);
-    sigaction(SIGINT, &recover_action, NULL);
     sigaction(SIGTERM, &recover_action, NULL);
     sigaction(SIGFPE, &recover_action, NULL);
     sigaction(SIGILL, &recover_action, NULL);
@@ -38,12 +32,30 @@ static void ihct_setup_recover_action() {
     sigaction(SIGBUS, &recover_action, NULL);
 }
 
+// Procedure called when a signal is thrown within a test. When a fatal signal is
+// recieved, we jump back to before the test is ran, giving the signal code.
+static void ihct_recovery_proc(int sig) {
+    // Restore.
+    longjmp(restore_environment, sig);
+}
+
+// Binds the sigaction to signals, and make it call ihct_recovery_proc.
+static void ihct_setup_recover_action(void) {
+    recover_action.sa_handler = &ihct_recovery_proc;
+    sigemptyset(&recover_action.sa_mask);
+    recover_action.sa_flags = 0;
+    // binding sigactions. Dont pick up on user interrupts (let them be managed
+    // normally).
+    ihct_set_sigaction();
+}
+
 
 void ihct_print_result(ihct_test_result *result) {
     switch (result->status) {
-    case FAIL: printf(IHCT_BG_RED IHCT_BOLD ":" IHCT_RESET); break;
     case PASS: printf(IHCT_BG_GREEN IHCT_BOLD "." IHCT_RESET); break;
+    case FAIL: printf(IHCT_BG_RED IHCT_BOLD ":" IHCT_RESET); break;
     case ERR: printf(IHCT_BG_RED IHCT_BOLD "!" IHCT_RESET); break;
+    case TIMEOUT: printf(IHCT_BG_YELLOW IHCT_BOLD "?" IHCT_RESET); break;
     }
 }
 // Reallocates and appends string s to summary_str
@@ -53,24 +65,52 @@ void ihct_add_to_summary(char *s) {
     strcat(summary_str, s);
 }
 void ihct_add_error_to_summary(ihct_test_result *res, ihct_unit *unit) {
-    char *assertion_format = IHCT_BOLD "%s:%d: "
-        IHCT_RESET "assertion in '"
-        IHCT_BOLD "%s"
-        IHCT_RESET "' "
-        IHCT_FG_RED "failed"
-        IHCT_RESET ":\n\t'"
-        IHCT_FG_YELLOW "%s"
-        IHCT_RESET "'\n";
-    size_t msg_size = snprintf(NULL, 0, assertion_format, res->file, res->line, 
-           unit->name, res->code) + 1;
-    char *msg = calloc(msg_size, sizeof(char));
-    sprintf(msg, assertion_format, res->file, res->line, unit->name, res->code);
+    char *msg;
+    char *msg_format;
+    size_t msg_size;
+    switch (res->status) {
+    case FAIL:
+        msg_format = IHCT_BOLD "%s:%d: "
+            IHCT_RESET "assertion in '"
+            IHCT_BOLD "%s"
+            IHCT_RESET "' "
+            IHCT_FG_RED "failed"
+            IHCT_RESET ":\n\t'"
+            IHCT_FG_YELLOW "%s"
+            IHCT_RESET "'\n";
+        msg_size = snprintf(NULL, 0, msg_format, res->file, res->line,
+            unit->name, res->code) + 1;
+        msg = calloc(msg_size, sizeof(*msg));
+        sprintf(msg, msg_format, res->file, res->line, unit->name, res->code);
+    break;
+    case ERR:
+        msg_format = "unit '"
+            IHCT_BOLD "%s"
+            IHCT_RESET "' had to restore because of fatal signal ("
+            IHCT_FG_RED "%s"
+            IHCT_RESET ")\n";
+        msg_size = snprintf(NULL, 0, msg_format, unit->name, res->code) + 1;
+        msg = calloc(msg_size, sizeof(*msg));
+        sprintf(msg, msg_format, unit->name, res->code);
+    break;
+    case TIMEOUT:
+        msg_format = "unit '"
+            IHCT_BOLD "%s"
+            IHCT_RESET "' "
+            IHCT_FG_YELLOW "timed out "
+            IHCT_RESET "(took "
+            IHCT_FG_YELLOW "5 "
+            IHCT_RESET "seconds).\n";
+        msg_size = snprintf(NULL, 0, msg_format, unit->name) + 1;
+        msg = calloc(msg_size, sizeof(*msg));
+        sprintf(msg, msg_format, unit->name);
+    }
     ihct_add_to_summary(msg);
 }
 
-bool ihct_assert_impl(bool eval, ihct_test_result *result, char *code, char *file, 
+bool ihct_assert_impl(bool eval, ihct_test_result *result, char *code, char *file,
                       unsigned long line) {
-    result->status = eval;
+    result->status = eval ? PASS : FAIL;
 
     if(!eval) {
         result->file = file;
@@ -144,37 +184,95 @@ void ihct_free_vector(ihct_vector *v) {
     free(v);
 }
 
+struct routine_run_unit_data {
+    ihct_test_proc proc;
+    ihct_test_result *result;
+};
+
+// Routine run in a separate thread to execute the unit.
+void *routine_run_unit(void *arg) {
+    struct routine_run_unit_data *data = (struct routine_run_unit_data *)arg;
+
+    int old;
+    // Allow the thread to be canceled.
+    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, &old);
+
+
+    // Create a jump point, to be able to restore when encountering fatal signal.
+    // When returning here because of a fatal signal, we abort unit with status
+    // ERR. Has to be done inside of thread, refer to man setjmp:
+    // "If, in a multithreaded program, a longjmp() call employs an env
+    // buffer that was initialized by a call to setjmp() in a different
+    // thread, the behavior is undefined.".
+    ihct_setup_recover_action();
+    int restore_status = setjmp(restore_environment);
+    if(restore_status != 0) {
+        char *p = malloc(strlen(strsignal(restore_status)) + 1);
+        strcpy(p, strsignal(restore_status));
+        data->result->code = p;
+        data->result->status = ERR;
+
+        // We still want to emit finished signal
+        pthread_mutex_lock(&lock);
+        pthread_cond_signal(&routine_done);
+        pthread_mutex_unlock(&lock);
+        return NULL;
+    }
+
+
+    // Run test, and save it's result.
+    (*data->proc)(data->result);
+
+    // Emit signal that thread is finished.
+    pthread_mutex_lock(&lock);
+    pthread_cond_signal(&routine_done);
+    pthread_mutex_unlock(&lock);
+    return NULL;
+}
+
 ihct_test_result *ihct_run_specific(ihct_unit *unit) {
     // Allocate memory for the tests result, and set it to passed by default.
     ihct_test_result *result = malloc(sizeof(ihct_test_result));
-    result->status = true;
+    result->status = PASS;
 
-    // Create a signal handler.
-    ihct_setup_recover_action();
+    // lock current thread.
+    pthread_mutex_lock(&lock);
 
-    // Create a jump point, to be able to resute when encountering segfault.
-    int status = setjmp(restore_environment);
-    if(status != 0) {
-        char *msg_format = "unit '"
-            IHCT_BOLD "%s"
-            IHCT_RESET "' had to restore because of fatal signal ("
-            IHCT_FG_RED "%s"
-            IHCT_RESET ")\n";
-        size_t msg_size = snprintf(NULL, 0, msg_format, unit->name, strsignal(status)) + 1;
-        char *msg = calloc(msg_size, sizeof(char));
-        sprintf(msg, msg_format, unit->name, strsignal(status));
-        ihct_add_to_summary(msg);
+    // Create a separate thread to run the test in. We set a limited time
+    // the process may be run, and abort if it times out.
+    struct timespec timeout;
+    clock_gettime(CLOCK_REALTIME, &timeout);
+    timeout.tv_sec += 5;
 
-        // Create an empty result
-        result->code = "";
-        result->file = "";
-        result->line = 0;
-        result->status = ERR;
+    // Create a temporary data struct to carry data into thread.
+    struct routine_run_unit_data data = {unit->procedure, result};
+
+    // Create new thread to run the unit routine.
+    pthread_t tid;
+    pthread_cond_init(&routine_done, NULL);
+    pthread_create(&tid, NULL, routine_run_unit, &data);
+
+    int err =  pthread_cond_timedwait(&routine_done, &lock, &timeout);
+
+    pthread_mutex_unlock(&lock);
+
+    // Reset to default signal handler after the unit has been run.
+    //recover_action.sa_handler = SIG_DFL;
+    //ihct_set_sigaction();
+
+    // If timed out, force quit thread and return TIMEOUT.
+    if(err == ETIMEDOUT) {
+        pthread_cancel(tid);
+
+        result->status = TIMEOUT;
         return result;
     }
 
+    //pthread_join(procedure, NULL);
+    pthread_join(tid, NULL);
+
     // Run test, and save it's result into i.
-    (*unit->procedure)(result);
+    //(*unit->procedure)(result);
 
     return result;
 }
@@ -200,23 +298,22 @@ int ihct_run(int argc, char **argv) {
 
         ihct_print_result(ihct_results[i]);
 
-        if(ihct_results[i]->status != PASS) {
+        if(ihct_results[i]->status) {
             failed_count++;
-        }
-        if(ihct_results[i]->status == FAIL) {
             ihct_add_error_to_summary(ihct_results[i], unit);
         }
     }
     clock_t time_posttests = clock();
     double elapsed = (double)(time_posttests - time_pretests) / CLOCKS_PER_SEC;
 
-    // print status
-    printf("\n%s%s", (failed_count > 0) ? "\n" : "", summary_str);
+    // print all messages
+    if(strlen(summary_str) > 4) printf("\n\n%s\n", summary_str);
+    else printf("\n\n");
 
     free(ihct_results);
     ihct_free_vector(testunits);
 
-    printf("\ntests took %.2f seconds\n", elapsed);
+    printf("tests took %.2f seconds\n", elapsed);
     if(failed_count) {
         char *status_format = IHCT_FG_GREEN "%d successful "
             IHCT_RESET "and "
@@ -224,13 +321,13 @@ int ihct_run(int argc, char **argv) {
             IHCT_RESET "of "
             IHCT_FG_YELLOW "%d run"
             IHCT_RESET "\n";
-        printf(status_format, unit_count-failed_count, failed_count, 
+        printf(status_format, unit_count-failed_count, failed_count,
                unit_count);
-        
+
         printf(IHCT_FG_RED "FAILURE\n" IHCT_RESET);
         return 1;
-    } 
-    
+    }
+
     char *status_format = IHCT_FG_GREEN "%d successful "
         IHCT_RESET "of "
         IHCT_FG_YELLOW "%d run"
@@ -245,7 +342,7 @@ int ihct_run(int argc, char **argv) {
 // IHCT_TEST_SELF. Still requires an external main entrypoint.
 #ifdef IHCT_TEST_SELF
 
-// Create two internal test procedures
+// Create two internal test procedures, for testing the test creation.
 static void itest_true(ihct_test_result *result) {
     IHCT_ASSERT(true);
 }
@@ -253,20 +350,10 @@ static void itest_false(ihct_test_result *result) {
     IHCT_ASSERT(false);
 }
 
-
 IHCT_TEST(self_unit_create) {
     ihct_unit *u = ihct_init_unit("internal_true", &itest_true);
     IHCT_ASSERT_STR(u->name, "internal_true");
     IHCT_ASSERT(&itest_true == u->procedure);
-}
-
-IHCT_TEST(self_unit_run) {
-    ihct_unit *u1 = ihct_init_unit("internal_true", &itest_true);
-    ihct_unit *u2 = ihct_init_unit("internal_false", &itest_false);
-    ihct_test_result *res1 = ihct_run_specific(u1);
-    ihct_test_result *res2 = ihct_run_specific(u2);
-    IHCT_ASSERT(res1->status == 1);
-    IHCT_NASSERT(res2->status == 1);
 }
 
 IHCT_TEST(self_vector_create) {

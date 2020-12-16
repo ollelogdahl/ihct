@@ -6,14 +6,10 @@ IHCT_TEST(arithmetic_addition_basic) {
     IHCT_ASSERT(8 + 8 == 16);
 }
 IHCT_TEST(arithmetic_addition_big) {
-    IHCT_ASSERT(1000 + 2000 == 3000);
-    IHCT_ASSERT(4000 + 2000 == 6000);
-    IHCT_ASSERT(8000 + 8000 == 16000);
+    IHCT_NASSERT(1000 + 1 == 1000);
 }
 IHCT_TEST(arithmetic_multiplication) {
-    IHCT_ASSERT(1 * 3 == 3);
-    IHCT_ASSERT(0 * 3 == 0);
-    IHCT_ASSERT(3 * 3 == 9);
+    IHCT_ASSERT(1 * 3 == 4);
 }
 
 IHCT_TEST(strings_basic) {
@@ -36,6 +32,12 @@ IHCT_TEST(strings_more) {
 IHCT_TEST(sigsegv_test) {
     int *p = NULL;
     *p = 3;
+}
+
+IHCT_TEST(timeout_test) {
+    for(;;) {
+        int i = 1;
+    }
 }
 
 int main(int argc, char **argv) {

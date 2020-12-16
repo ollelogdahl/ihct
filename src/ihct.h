@@ -6,12 +6,11 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <signal.h> // handle tests that yield SIGABRT, SIGFPE, SIGILL, SIGSEGV SIGTERM
 
 // Structure for a testunits return value. Contains state, the code (assert) which
 // failed the test, and a reference to where the code is.
 typedef struct {
-    enum {FAIL, PASS, ERR} status;
+    enum {PASS, FAIL, ERR, TIMEOUT} status;
     char *code;
     char *file;
     unsigned long line;
