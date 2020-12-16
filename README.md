@@ -16,8 +16,8 @@ logical and light. Looking for more features, so please give any suggestions.
 
 #### See [documentation](https://ollelogdahl.github.io/ihct/)
 
-To use this framework, include `ihct.h` and `ihct.c` in your project. See `ex.c` for an extended example.
-The test creates it's own executable, and therefore needs an entrypoint. The following code should get you started.
+To use this framework, simply include `ihct.h` in your project and link to the library. **Everything else happens automatically**.
+The following code should get you started.
 
 ```c
 #include <ihct.h>
@@ -25,13 +25,11 @@ The test creates it's own executable, and therefore needs an entrypoint. The fol
 IHCT_TEST(arithmetic_basic) {
     int a = 13;
     IHCT_ASSERT(a + 2 == 15);
-    IHCT_ASSERT(a - 4 == 9);
     IHCT_ASSERT(a * 2 == 26);
 }
 IHCT_TEST(string_basic) {
     char *s1 = "abba";
     IHCT_NASSERT(strcpr(s1, "abba"));
-    IHCT_ASSERT(strcpr(s1, "Abba"));
 }
 
 int main(int argc, char **argv) {
@@ -47,6 +45,7 @@ cmake .. && make -j4
 sudo make install
 ```
 
+See `ex.c` for an extended example. Note that tests are created as it's own executable, and therefore needs an entrypoint.
 The example `ex.c` can be compiled and executed by running:
 ```bash
 mkdir build
@@ -55,7 +54,14 @@ cmake .. && make -j4
 ./example
 ```
 
-Self tests can be run along with own tests by adding compiler flag `-DIHCT_SELF_TEST`. (This may be very redundant; just see it as more examples :-) )
+---
+
+## Why?
+I have for a long time been stuck at unit testing in plain C. Many modern solutions use C++ as a test environment for C, but I wanted something
+more lightweight, that i can quickly get up to speed with. I decided to write my own test framework with two things in mind: **development speed** 
+and **minimalism**. To improve development speed, all test functions are automatically included into the runner, and the library interface is kept
+minimal. It has **zero dependencies**, and C99 compatible (*NOTE* GNU C). The library also implements some safety to tests, catching fatal signals
+and hung functions.
 
 ---
 
@@ -65,6 +71,7 @@ Self tests can be run along with own tests by adding compiler flag `-DIHCT_SELF_
 - Automatic test loader
 - Catching fatal signals (SEGFAULTS etc.) in tests (no line number, but sets them as failed).
 - Catching hung tests (again, no line number).
+Self tests can be run along with own tests by adding compiler flag `-DIHCT_SELF_TEST`. (This may be very redundant; just see it as more examples :-) )
 
 ## Links
 
