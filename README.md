@@ -39,11 +39,20 @@ int main(int argc, char **argv) {
 }
 ```
 
-The example `ex.c` can be compiled with by running:
+To fully install the library, run:
 ```bash
 mkdir build
 cd build
 cmake .. && make -j4
+sudo make install
+```
+
+The example `ex.c` can be compiled and executed by running:
+```bash
+mkdir build
+cd build
+cmake .. && make -j4
+./example
 ```
 
 Self tests can be run along with own tests by adding compiler flag `-DIHCT_SELF_TEST`.
