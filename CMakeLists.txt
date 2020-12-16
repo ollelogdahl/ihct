@@ -11,6 +11,8 @@ add_library(ihct
     SHARED
     src/ihct.c
 )
+target_link_libraries(ihct PRIVATE Threads::Threads)
+
 include_directories("${CMAKE_SOURCE_DIR}/src")
 
 add_executable(example
