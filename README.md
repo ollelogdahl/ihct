@@ -55,7 +55,7 @@ cmake .. && make -j4
 ./example
 ```
 
-Self tests can be run along with own tests by adding compiler flag `-DIHCT_SELF_TEST`.
+Self tests can be run along with own tests by adding compiler flag `-DIHCT_SELF_TEST`. (This may be very redundant; just see it as more examples :-) )
 
 ---
 
@@ -63,6 +63,8 @@ Self tests can be run along with own tests by adding compiler flag `-DIHCT_SELF_
 - Basic test units
 - Basic asserts
 - Automatic test loader
+- Catching fatal signals (SEGFAULTS etc.) in tests (no line number, but sets them as failed).
+- Catching hung tests (again, no line number).
 
 ## Links
 
