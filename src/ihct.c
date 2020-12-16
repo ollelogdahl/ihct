@@ -320,7 +320,7 @@ int ihct_run(int argc, char **argv) {
 
     // print all messages
     if(strlen(summary_str) > 4) printf("\n\n%s\n", summary_str);
-    else printf("\n\n");
+    else puts("\n\n");
 
     printf("tests took %.2f seconds\n", elapsed);
     if(failed_count) {

@@ -135,7 +135,7 @@ static void ihct_free_vector(ihct_vector *v);
 /// Used for more complex tests where the PASS/FAIL status is more complex
 /// than an assert.
 #define IHCT_PASS()                                                                     \
-    result->passed = true; return
+    result->status = PASS; return
 
 /// @brief Set the test as failed and return.
 /// @ingroup assertions
@@ -143,7 +143,7 @@ static void ihct_free_vector(ihct_vector *v);
 /// Used for more complex tests where the PASS/FAIL status is more complex
 /// than an assert.
 #define IHCT_FAIL()                                                                     \
-    result->passed = false; return
+    result->status = FAIL; return
 
 // Function macros
 /// @defgroup funcs Testing functions
