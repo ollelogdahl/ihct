@@ -1,4 +1,5 @@
 #include "ihct.h"
+#include "vector.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -60,7 +61,11 @@ void ihct_print_result(ihct_test_result *result) {
 }
 // Reallocates and appends string s to summary_str
 void ihct_add_to_summary(char *s) {
-    char *p = realloc(summary_str, strlen(summary_str) + strlen(s));
+    char *p = realloc(summary_str, strlen(summary_str) + strlen(s) + 1);
+    if(!p) {
+        printf("Couldn't allocate a str big enough to hold summary. Aborting.\n");
+        return;
+    }
     summary_str = p;
     strcat(summary_str, s);
 }
@@ -145,45 +150,7 @@ void ihct_unit_free(ihct_unit *unit) {
 
 void ihct_init(void) {
     // atm, only initializes the unit list. Is this neccessary?
-    testunits = ihct_init_vector();
-}
-
-ihct_vector *ihct_init_vector() {
-    ihct_vector *v = malloc(sizeof(ihct_vector));
-    if(v == NULL) {
-        printf("Couldn't allocate memory for vector.\n");
-        exit(EXIT_FAILURE);
-    }
-    v->size = 0;
-    v->data = NULL;
-}
-void ihct_vector_add(ihct_vector *v, void *obj) {
-    if(v->size == 0) {
-        // Allocate a single 
-        v->data = malloc(sizeof(obj));
-        if(v->data == NULL) {
-            printf("Couldn't allocate memory for object.\n");
-            exit(EXIT_FAILURE);
-        }
-        v->data[0] = obj;
-    } else {
-        void *p = realloc(v->data, (v->size + 1) * sizeof(obj));
-        if(p == NULL) {
-            printf("Couldn't allocate memory for object.\n");
-            exit(EXIT_FAILURE);
-        }
-        v->data = p;
-        v->data[v->size] = obj;
-    }
-    v->size++;
-}
-void *ihct_vector_get(ihct_vector *v, int index) {
-    return v->data[index];
-}
-void ihct_free_vector(ihct_vector *v) {
-    free(v->data);
-    v->data = NULL;
-    free(v);
+    testunits = ihct_vector_init();
 }
 
 struct routine_run_unit_data {
@@ -263,6 +230,8 @@ ihct_test_result *ihct_run_specific(ihct_unit *unit) {
     //ihct_set_sigaction();
 
     // If timed out, force quit thread and return TIMEOUT.
+    // Note that this is not safe memory. There is a high chance that
+    // the thread may not be freed. Looking into solving this.
     if(err == ETIMEDOUT) {
         pthread_cancel(tid);
 
@@ -287,7 +256,8 @@ int ihct_run(int argc, char **argv) {
     unsigned failed_count = 0;
 
     // initialize the summary string
-    summary_str = calloc(0, sizeof(char));
+    summary_str = malloc(sizeof(char));
+    *summary_str = '\0';
 
     // start clock
     struct timespec tbegin, tend;
@@ -309,10 +279,16 @@ int ihct_run(int argc, char **argv) {
             failed_count++;
             ihct_add_error_to_summary(ihct_results[i], unit);
         }
-    }
+        // Frees both the unit and the result.
+        ihct_unit_free(unit);
 
+        // Also frees dynamic allocated string if status is err (the signal name).
+        if(ihct_results[i]->status == ERR) free(ihct_results[i]->code);
+
+        free(ihct_results[i]);
+    }
     free(ihct_results);
-    ihct_free_vector(testunits);
+    ihct_vector_free(testunits);
 
     clock_gettime(CLOCK_MONOTONIC, &tend);
     double elapsed = (tend.tv_sec - tbegin.tv_sec);
@@ -321,6 +297,9 @@ int ihct_run(int argc, char **argv) {
     // print all messages
     if(strlen(summary_str) > 4) printf("\n\n%s\n", summary_str);
     else puts("\n\n");
+
+    // Free summary str
+    free(summary_str);
 
     printf("tests took %.2f seconds\n", elapsed);
     if(failed_count) {

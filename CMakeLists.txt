@@ -10,13 +10,13 @@ find_package(Threads REQUIRED)
 add_library(ihct
     SHARED
     src/ihct.c
+    src/vector.c
 )
 target_link_libraries(ihct PRIVATE Threads::Threads)
 
 include_directories("${CMAKE_SOURCE_DIR}/src")
 
 add_executable(example
-    src/ihct.c
     examples/ex.c
 )
 target_link_libraries(example PRIVATE Threads::Threads ihct)

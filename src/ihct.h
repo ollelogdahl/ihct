@@ -1,5 +1,3 @@
-
-
 #ifndef IHCT_H
 #define IHCT_H
 
@@ -48,24 +46,6 @@ static void ihct_init(void) __attribute__((constructor(101)));
 
 // Run a specific testing unit.
 static ihct_test_result *ihct_run_specific(ihct_unit *unit);
-
-// Datatype representing a vector. to be used internally in IHCT_RUN
-typedef struct {
-    void **data;
-    size_t size;
-} ihct_vector;
-
-// Allocates a new vector with capacity cap.
-static ihct_vector *ihct_init_vector();
-
-// Add a pointer to a allocated object at the end of the vector.
-static void ihct_vector_add(ihct_vector *v, void *obj);
-
-// Gets the object at location index in vector v.
-static void *ihct_vector_get(ihct_vector *v, int index);
-
-// Deallocates the vector.
-static void ihct_free_vector(ihct_vector *v);
 
 // These are ISO/IEC 6429 escape sequences for
 // communicating text attributes to terminal emulators.
