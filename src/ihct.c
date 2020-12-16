@@ -52,10 +52,10 @@ static void ihct_setup_recover_action(void) {
 
 void ihct_print_result(ihct_test_result *result) {
     switch (result->status) {
-    case PASS: printf(IHCT_BG_GREEN IHCT_BOLD "." IHCT_RESET); break;
-    case FAIL: printf(IHCT_BG_RED IHCT_BOLD ":" IHCT_RESET); break;
-    case ERR: printf(IHCT_BG_RED IHCT_BOLD "!" IHCT_RESET); break;
-    case TIMEOUT: printf(IHCT_BG_YELLOW IHCT_BOLD "?" IHCT_RESET); break;
+    case PASS: fputs(IHCT_BG_GREEN IHCT_BOLD "." IHCT_RESET, stdout); break;
+    case FAIL: fputs(IHCT_BG_RED IHCT_BOLD ":" IHCT_RESET, stdout); break;
+    case ERR: fputs(IHCT_BG_RED IHCT_BOLD "!" IHCT_RESET, stdout); break;
+    case TIMEOUT: fputs(IHCT_BG_YELLOW IHCT_BOLD "?" IHCT_RESET, stdout); break;
     }
 }
 // Reallocates and appends string s to summary_str
@@ -106,6 +106,8 @@ void ihct_add_error_to_summary(ihct_test_result *res, ihct_unit *unit) {
         sprintf(msg, msg_format, unit->name);
     }
     ihct_add_to_summary(msg);
+
+    free(msg);
 }
 
 bool ihct_assert_impl(bool eval, ihct_test_result *result, char *code, char *file,
@@ -288,7 +290,8 @@ int ihct_run(int argc, char **argv) {
     summary_str = calloc(0, sizeof(char));
 
     // start clock
-    clock_t time_pretests = clock();
+    struct timespec tbegin, tend;
+    clock_gettime(CLOCK_MONOTONIC, &tbegin);
 
     // Iterate over every test
     for(unsigned i = 0; i < unit_count; i++) {
@@ -296,22 +299,28 @@ int ihct_run(int argc, char **argv) {
 
         ihct_results[i] = ihct_run_specific(unit);
 
+        // ensure 80 width
+        if(i % 80 == 0 && i != 0) putc('\n', stdout);
+
         ihct_print_result(ihct_results[i]);
+        fflush(stdout);
 
         if(ihct_results[i]->status) {
             failed_count++;
             ihct_add_error_to_summary(ihct_results[i], unit);
         }
     }
-    clock_t time_posttests = clock();
-    double elapsed = (double)(time_posttests - time_pretests) / CLOCKS_PER_SEC;
+
+    free(ihct_results);
+    ihct_free_vector(testunits);
+
+    clock_gettime(CLOCK_MONOTONIC, &tend);
+    double elapsed = (tend.tv_sec - tbegin.tv_sec);
+    elapsed += (tend.tv_nsec - tbegin.tv_nsec) / 1000000000.0;
 
     // print all messages
     if(strlen(summary_str) > 4) printf("\n\n%s\n", summary_str);
     else printf("\n\n");
-
-    free(ihct_results);
-    ihct_free_vector(testunits);
 
     printf("tests took %.2f seconds\n", elapsed);
     if(failed_count) {

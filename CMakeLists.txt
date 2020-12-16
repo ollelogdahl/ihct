@@ -7,7 +7,7 @@ set(CMAKE_BUILD_TYPE Debug)
 
 find_package(Threads REQUIRED)
 
-add_compile_definitions(IHCT_TEST_SELF)
+#add_compile_definitions(IHCT_TEST_SELF)
 
 add_executable(ihct
     src/ihct.c
