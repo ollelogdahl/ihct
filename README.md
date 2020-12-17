@@ -65,8 +65,8 @@ cmake .. && make -j4
 I have for a long time been stuck at unit testing in plain C. Many modern solutions use C++ as a test environment for C, but I wanted something
 more lightweight, that i can quickly get up to speed with. I decided to write my own test framework with two things in mind: **development speed** 
 and **minimalism**. To improve development speed, all test functions are automatically included into the runner, and the library interface is kept
-minimal. It has **zero dependencies**, and C99 compatible (*NOTE* GNU C). The library also implements some safety to tests, catching fatal signals
-and hung functions.
+minimal. It has **zero dependencies**, and works for all GNU C99 POSIX compatible (*NOTE* GNU C). The library also implements some safety to tests,
+catching fatal signals and hung functions.
 
 ---
 
@@ -77,6 +77,10 @@ and hung functions.
 - Catching fatal signals (SEGFAULTS etc.) in tests (no line number, but sets them as failed).
 - Catching hung tests (again, no line number).
 Self tests can be run along with own tests by adding compiler flag `-DIHCT_SELF_TEST`. (This may be very redundant; just see it as more examples :-) )
+
+## Notes
+ - Since it requires `__attribute__((constructor))` it is not compilable with MSVC.
+ - Since it uses pthreads and signals, it is POSIX (again, not sure it works with Windows).
 
 ## Links
 
