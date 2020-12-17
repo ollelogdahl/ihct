@@ -65,8 +65,8 @@ cmake .. && make -j4
 I have for a long time been stuck at unit testing in plain C. Many modern solutions use C++ as a test environment for C, but I wanted something
 more lightweight, that i can quickly get up to speed with. I decided to write my own test framework with two things in mind: **development speed** 
 and **minimalism**. To improve development speed, all test functions are automatically included into the runner, and the library interface is kept
-minimal. It has **zero dependencies**, and works for all GNU C99 POSIX compatible (*NOTE* GNU C). The library also implements some safety to tests,
-catching fatal signals and hung functions.
+minimal. It requires no dependencies other than a POSIX compliant OS, and compiles on all GNU C99 POSIX compatible compilers. The library also 
+implements some safety to tests, catching fatal signals and hung functions.
 
 ---
 
