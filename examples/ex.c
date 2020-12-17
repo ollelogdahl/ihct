@@ -46,10 +46,6 @@ IHCT_TEST(timeout_test) {
     }
 }
 
-IHCT_FIXTURE(timeout_fixture) {
-    printf("");
-}
-
 int main(int argc, char **argv) {
     return IHCT_RUN(argc, argv);
 }
