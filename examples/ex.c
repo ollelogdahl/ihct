@@ -46,6 +46,12 @@ IHCT_TEST(timeout_test) {
     }
 }
 
+IHCT_TEST(if_no_block) {
+    if(0) IHCT_ASSERT(1 == 1);
+    
+    IHCT_FAIL();
+}
+
 int main(int argc, char **argv) {
     return IHCT_RUN(argc, argv);
 }

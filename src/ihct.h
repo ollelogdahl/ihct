@@ -115,7 +115,7 @@ static ihct_test_result *ihct_run_specific(ihct_unit *unit);
 /// Used for more complex tests where the PASS/FAIL status is more complex
 /// than an assert.
 #define IHCT_PASS()                                                                     \
-    result->status = PASS; return
+    { result->status = PASS; return; }
 
 /// @brief Set the test as failed and return.
 /// @ingroup assertions
@@ -123,7 +123,7 @@ static ihct_test_result *ihct_run_specific(ihct_unit *unit);
 /// Used for more complex tests where the PASS/FAIL status is more complex
 /// than an assert.
 #define IHCT_FAIL()                                                                     \
-    result->status = FAIL; return
+    { result->status = FAIL; return; }
 
 // Function macros
 /// @defgroup funcs Testing functions
@@ -150,16 +150,16 @@ static ihct_test_result *ihct_run_specific(ihct_unit *unit);
 #define IHCT_TEST(name)                                                                 \
     static void test_##name(ihct_test_result *result);                                  \
     static void __attribute__((constructor(102))) __construct_test_##name(void) {       \
-        ihct_construct_test_impl(#name, &test_##name);                                   \
+        ihct_construct_test_impl(#name, &test_##name);                                  \
     }                                                                                   \
     static void test_##name(ihct_test_result *result)
 
 /// @brief Defines a fixture with data to be preloaded before a test.
 /// A ficture is included by a IHCT_REQUIRE inside a test.
-#define IHCT_FIXTURE(name) _Static_assert(0, "Fixtures not implemented.");
+#define IHCT_FIXTURE(name) _Static_assert(0, "Fixtures not implemented.")
 
 /// @brief Make the test require the given fixtures.
 /// @param ... one or more fixture names.
-#define IHCT_REQUIRE(...) _Static_assert(0, "Fixture requirements not implemented.");
+#define IHCT_REQUIRE(...) _Static_assert(0, "Fixture requirements not implemented.")
 
 #endif
