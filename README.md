@@ -12,6 +12,10 @@ Olle Lögdahl, 13 December 2020
 **ihct** is a minimal C unit-testing framework. Intended for light unit testing, and keeping the user interface
 logical and light. Looking for more features, so please give any suggestions.
 
+<p align="center">
+    <img src="https://github.com/ollelogdahl/ihct/blob/master/media.png">
+</p>
+
 ## Installation & Usage
 
 #### See [documentation](https://ollelogdahl.github.io/ihct/)
