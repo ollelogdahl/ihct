@@ -10,8 +10,8 @@ Olle Lögdahl, 13 December 2020
 
 ---
 
-**ihct** is a minimal C unit-testing framework. Intended for light unit testing, and keeping the user interface
-logical and light. Looking for more features, so please give any suggestions.
+**ihct** is a minimal C unit-testing framework. Intended for light unit testing, and focusing on development speed. 
+Looking for more features, so please give any suggestions.
 
 <p align="center">
     <img src="https://github.com/ollelogdahl/ihct/blob/master/media.png">
@@ -76,6 +76,7 @@ implements some safety to tests, catching fatal signals and hung functions.
 - Automatic test loader
 - Catching fatal signals (SEGFAULTS etc.) in tests (no line number, but sets them as failed).
 - Catching hung tests (again, no line number).
+
 Self tests can be run along with own tests by adding compiler flag `-DIHCT_SELF_TEST`. (This may be very redundant; just see it as more examples :-) )
 
 ## Notes
