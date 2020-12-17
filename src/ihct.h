@@ -156,10 +156,10 @@ static ihct_test_result *ihct_run_specific(ihct_unit *unit);
 
 /// @brief Defines a fixture with data to be preloaded before a test.
 /// A ficture is included by a IHCT_REQUIRE inside a test.
-#define IHCT_FIXTURE(name) blah
+#define IHCT_FIXTURE(name) _Static_assert(0, "Fixtures not implemented.");
 
 /// @brief Make the test require the given fixtures.
 /// @param ... one or more fixture names.
-#define IHCT_REQUIRE(...) lel
+#define IHCT_REQUIRE(...) _Static_assert(0, "Fixture requirements not implemented.");
 
 #endif

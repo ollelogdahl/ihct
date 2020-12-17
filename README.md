@@ -33,7 +33,7 @@ IHCT_TEST(arithmetic_basic) {
 }
 IHCT_TEST(string_basic) {
     char *s1 = "abba";
-    IHCT_NASSERT(strcpr(s1, "abba"));
+    IHCT_NASSERT_STR(s1, "abba");
 }
 
 int main(int argc, char **argv) {
