@@ -73,6 +73,8 @@ void ihct_init(void) __attribute__((constructor(101)));
 /// the unit will fail the test.
 /// @ingroup assertions
 /// @param expr the expression to evaluate.
+///
+/// Can be shortened to remove 'IHCT_' prefix by defining IHCT_SHORT.
 #define IHCT_ASSERT(expr)                                                               \
     if(!ihct_assert_impl(expr, result, #expr, __FILE__, __LINE__)) return
 
@@ -80,6 +82,8 @@ void ihct_init(void) __attribute__((constructor(101)));
 /// the unit will fail the test.
 /// @ingroup assertions
 /// @param expr the expression to evaluate.
+///
+/// Can be shortened to remove 'IHCT_' prefix by defining IHCT_SHORT.
 #define IHCT_NASSERT(expr)                                                              \
     if(!ihct_assert_impl(!expr, result, "!" #expr, __FILE__, __LINE__)) return
 
@@ -88,6 +92,8 @@ void ihct_init(void) __attribute__((constructor(101)));
 /// @ingroup assertions
 /// @param s1 first string to compare
 /// @param s2 second string to compare
+///
+/// Can be shortened to remove 'IHCT_' prefix by defining IHCT_SHORT.
 #define IHCT_ASSERT_STR(s1, s2)                                                         \
     if(!ihct_assert_impl(!strcmp(s1, s2), result, #s1 " == " #s2, __FILE__,             \
        __LINE__)) return
@@ -96,6 +102,8 @@ void ihct_init(void) __attribute__((constructor(101)));
 /// @ingroup assertions
 /// @param s1 first string to compare
 /// @param s2 second string to compare
+///
+/// Can be shortened to remove 'IHCT_' prefix by defining IHCT_SHORT.
 #define IHCT_NASSERT_STR(s1, s2)                                                        \
     if(!ihct_assert_impl(strcmp(s1, s2), result, #s1 " != " #s2, __FILE__,              \
        __LINE__)) return
@@ -104,7 +112,7 @@ void ihct_init(void) __attribute__((constructor(101)));
 /// @ingroup assertions
 ///
 /// Used for more complex tests where the PASS/FAIL status is more complex
-/// than an assert.
+/// than an assert. Can be shortened to remove 'IHCT_' prefix by defining IHCT_SHORT.
 #define IHCT_PASS()                                                                     \
     do { result->status = PASS; return; } while(0)
 
@@ -112,7 +120,7 @@ void ihct_init(void) __attribute__((constructor(101)));
 /// @ingroup assertions
 ///
 /// Used for more complex tests where the PASS/FAIL status is more complex
-/// than an assert.
+/// than an assert. Can be shortened to remove 'IHCT_' prefix by defining IHCT_SHORT.
 #define IHCT_FAIL()                                                                     \
     do { result->status = FAIL; return; } while(0)
 
@@ -136,8 +144,13 @@ void ihct_init(void) __attribute__((constructor(101)));
 /// @brief Create a new test unit, which can take any number of asserts.
 /// @ingroup funcs
 /// @code
-/// IHCT_TEST(basic_test)
+/// IHCT_TEST(basic_test) {
+///     IHCT_ASSERT(1 == 1);
+/// }
+/// @endcode
 /// @param name the name of the test.
+///
+/// Can be shortened to remove 'IHCT_' prefix by defining IHCT_SHORT.
 #define IHCT_TEST(name)                                                                 \
     static void test_##name(ihct_test_result *result);                                  \
     static void __attribute__((constructor(102))) __construct_test_##name(void) {       \
@@ -152,5 +165,15 @@ void ihct_init(void) __attribute__((constructor(101)));
 /// @brief Make the test require the given fixtures.
 /// @param ... one or more fixture names.
 #define IHCT_REQUIRE(...) _Static_assert(0, "Fixture requirements not implemented.")
+
+#ifdef IHCT_SHORT
+#define TEST(name) IHCT_TEST(name)
+#define ASSERT(expr) IHCT_ASSERT(expr)
+#define NASSERT(expr) IHCT_NASSERT(expr)
+#define ASSERT_STR(s1, s2) IHCT_ASSERT_STR(s1, s2)
+#define NASSERT_STR(s1, s2) IHCT_NASSERT_STR(s1, s2)
+#define PASS() IHCT_PASS()
+#define FAIL() IHCT_FAIL()
+#endif
 
 #endif
