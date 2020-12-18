@@ -3,3 +3,5 @@ build/
 .vscode/
 docs/
 that_style/
+*.o
+test
