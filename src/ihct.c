@@ -9,6 +9,7 @@
 #include <signal.h> // handle tests that yield fatal signals.
 #include <errno.h>
 #include <pthread.h>
+#include <unistd.h>
 
 // The point of which to restore to on a fatal signal.
 jmp_buf restore_environment;
@@ -20,6 +21,10 @@ char *summary_str;
 static ihct_vector *testunits;
 // An array of all first failed (or last if all successful) assert results in every test.
 static ihct_test_result **ihct_results;
+
+// The number of seconds passed until a test is considered timedout.
+// Default 3. Can be set with -t [time in sec]
+int test_timeout = 3;
 
 pthread_cond_t routine_done = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
@@ -212,7 +217,7 @@ static ihct_test_result *ihct_run_specific(ihct_unit *unit) {
     // the process may be run, and abort if it times out.
     struct timespec timeout;
     clock_gettime(CLOCK_REALTIME, &timeout);
-    timeout.tv_sec += 5;
+    timeout.tv_sec += test_timeout;
 
     // Create a temporary data struct to carry data into thread.
     struct routine_run_unit_data data = {unit->procedure, result};
@@ -259,6 +264,18 @@ int ihct_run(int argc, char **argv) {
     // initialize the summary string
     summary_str = malloc(sizeof(char));
     *summary_str = '\0';
+
+    // handle args
+    int c;
+    while((c = getopt(argc, argv, "t:")) != -1) {
+        switch(c) {
+        case 't':
+            test_timeout = atoi(optarg);
+            break;
+        case '?':
+            printf("unknown option '%c'.\n", optopt);
+        }
+    }
 
     // start clock
     struct timespec tbegin, tend;
