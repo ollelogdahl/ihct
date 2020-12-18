@@ -74,6 +74,7 @@ void ihct_add_error_to_summary(ihct_test_result *res, ihct_unit *unit) {
     char *msg_format;
     size_t msg_size;
     switch (res->status) {
+    case PASS: break;
     case FAIL:
         msg_format = IHCT_BOLD "%s:%d: "
             IHCT_RESET "assertion in '"
@@ -128,12 +129,7 @@ bool ihct_assert_impl(bool eval, ihct_test_result *result, char *code, char *fil
     return true;
 }
 
-void ihct_construct_test_impl(char *name, ihct_test_proc procedure) {
-    ihct_unit *unit = ihct_init_unit(name, procedure);
-    ihct_vector_add(testunits, unit);
-}
-
-ihct_unit *ihct_init_unit(char *name, ihct_test_proc procedure) {
+static ihct_unit *ihct_init_unit(char *name, ihct_test_proc procedure) {
     ihct_unit *unit = (ihct_unit *)malloc(sizeof(ihct_unit));
     char *strmem = malloc(strlen(name) + 1);
     strcpy(strmem, name);
@@ -143,7 +139,12 @@ ihct_unit *ihct_init_unit(char *name, ihct_test_proc procedure) {
     return unit;
 }
 
-void ihct_unit_free(ihct_unit *unit) {
+void ihct_construct_test_impl(char *name, ihct_test_proc procedure) {
+    ihct_unit *unit = ihct_init_unit(name, procedure);
+    ihct_vector_add(testunits, unit);
+}
+
+static void ihct_unit_free(ihct_unit *unit) {
     free(unit->name);
     free(unit);
 }
@@ -199,7 +200,7 @@ void *routine_run_unit(void *arg) {
     return NULL;
 }
 
-ihct_test_result *ihct_run_specific(ihct_unit *unit) {
+static ihct_test_result *ihct_run_specific(ihct_unit *unit) {
     // Allocate memory for the tests result, and set it to passed by default.
     ihct_test_result *result = malloc(sizeof(ihct_test_result));
     result->status = PASS;

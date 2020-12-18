@@ -24,12 +24,6 @@ typedef struct {
     ihct_test_proc procedure;
 } ihct_unit;
 
-// Allocates a new unit node.
-static ihct_unit *ihct_init_unit(char *name, ihct_test_proc procedure);
-
-// Frees the created unit (does not remove it from the unit list).
-static void ihct_unit_free(ihct_unit *unit);
-
 // Called within a test. 
 bool ihct_assert_impl(bool eval, ihct_test_result *result, char *code, char *file, 
                       unsigned long line);
@@ -42,10 +36,7 @@ int ihct_run(int argc, char **argv);
 
 // Initializes the unitlist (Has to be done before all testing units are created).
 // Using priority to ensure that the unit list is constructed before it gets populated.
-static void ihct_init(void) __attribute__((constructor(101)));
-
-// Run a specific testing unit.
-static ihct_test_result *ihct_run_specific(ihct_unit *unit);
+void ihct_init(void) __attribute__((constructor(101)));
 
 // These are ISO/IEC 6429 escape sequences for
 // communicating text attributes to terminal emulators.
