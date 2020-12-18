@@ -115,7 +115,7 @@ static ihct_test_result *ihct_run_specific(ihct_unit *unit);
 /// Used for more complex tests where the PASS/FAIL status is more complex
 /// than an assert.
 #define IHCT_PASS()                                                                     \
-    { result->status = PASS; return; }
+    do { result->status = PASS; return; } while(0)
 
 /// @brief Set the test as failed and return.
 /// @ingroup assertions
@@ -123,7 +123,7 @@ static ihct_test_result *ihct_run_specific(ihct_unit *unit);
 /// Used for more complex tests where the PASS/FAIL status is more complex
 /// than an assert.
 #define IHCT_FAIL()                                                                     \
-    { result->status = FAIL; return; }
+    do { result->status = FAIL; return; } while(0)
 
 // Function macros
 /// @defgroup funcs Testing functions
