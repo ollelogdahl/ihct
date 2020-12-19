@@ -8,7 +8,7 @@
 // Structure for a testunits return value. Contains state, the code (assert) which
 // failed the test, and a reference to where the code is.
 typedef struct {
-    enum {PASS, FAIL, ERR, TIMEOUT} status;
+    enum {PASS, FAIL, FAIL_FORCE, ERR, TIMEOUT} status;
     char *code;
     char *file;
     unsigned long line;
@@ -20,6 +20,9 @@ typedef void (*ihct_test_proc)(ihct_test_result *);
 // Called within a test. 
 bool ihct_assert_impl(bool eval, ihct_test_result *result, char *code, char *file, 
                       unsigned long line);
+
+void ihct_pass_impl(ihct_test_result *result, char *file, unsigned long line);
+void ihct_fail_impl(ihct_test_result *result, char *file, unsigned long line);
 
 // Called on test unit construction.
 void ihct_construct_test_impl(char *s, ihct_test_proc proc);
@@ -83,7 +86,7 @@ void ihct_init(void) __attribute__((constructor(101)));
 /// Used for more complex tests where the PASS/FAIL status is more complex
 /// than an assert. Can be shortened to remove 'IHCT_' prefix by defining IHCT_SHORT.
 #define IHCT_PASS()                                                                     \
-    do { result->status = PASS; return; } while(0)
+    do { ihct_pass_impl(result, __FILE__, __LINE__); return; } while(0)
 
 /// @brief Set the test as failed and return.
 /// @ingroup assertions
@@ -91,7 +94,7 @@ void ihct_init(void) __attribute__((constructor(101)));
 /// Used for more complex tests where the PASS/FAIL status is more complex
 /// than an assert. Can be shortened to remove 'IHCT_' prefix by defining IHCT_SHORT.
 #define IHCT_FAIL()                                                                     \
-    do { result->status = FAIL; return; } while(0)
+    do { ihct_fail_impl(result, __FILE__, __LINE__); return; } while(0)
 
 // Function macros
 /// @defgroup funcs Testing functions

@@ -90,6 +90,7 @@ static void ihct_setup_recover_action(void) {
 void ihct_print_result(ihct_test_result *result) {
     switch (result->status) {
     case PASS: fputs(IHCT_BG_GREEN IHCT_BOLD "." IHCT_RESET, stdout); break;
+    case FAIL_FORCE:
     case FAIL: fputs(IHCT_BG_RED IHCT_BOLD ":" IHCT_RESET, stdout); break;
     case ERR: fputs(IHCT_BG_RED IHCT_BOLD "!" IHCT_RESET, stdout); break;
     case TIMEOUT: fputs(IHCT_BG_YELLOW IHCT_BOLD "?" IHCT_RESET, stdout); break;
@@ -124,6 +125,18 @@ void ihct_add_error_to_summary(ihct_test_result *res, ihct_unit *unit) {
             unit->name, res->code) + 1;
         msg = calloc(msg_size, sizeof(*msg));
         sprintf(msg, msg_format, res->file, res->line, unit->name, res->code);
+    break;
+    case FAIL_FORCE:
+        msg_format = IHCT_BOLD "%s:%d: "
+            IHCT_RESET "'"
+            IHCT_BOLD "%s"
+            IHCT_RESET "' "
+            IHCT_FG_RED "forcefully failed"
+            IHCT_RESET ".\n";
+        msg_size = snprintf(NULL, 0, msg_format, res->file, res->line,
+            unit->name) + 1;
+        msg = calloc(msg_size, sizeof(*msg));
+        sprintf(msg, msg_format, res->file, res->line, unit->name);
     break;
     case ERR:
         msg_format = "unit '"
@@ -163,6 +176,18 @@ bool ihct_assert_impl(bool eval, ihct_test_result *result, char *code, char *fil
         return false;
     }
     return true;
+}
+
+void ihct_pass_impl(ihct_test_result *result, char *file, unsigned long line) {
+    result->status = PASS;
+    result->file = file;
+    result->line = line;
+}
+
+void ihct_fail_impl(ihct_test_result *result, char *file, unsigned long line) {
+    result->status = FAIL_FORCE;
+    result->file = file;
+    result->line = line;
 }
 
 static ihct_unit *ihct_init_unit(char *name, ihct_test_proc procedure) {
