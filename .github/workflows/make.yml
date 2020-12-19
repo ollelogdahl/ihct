@@ -41,3 +41,18 @@ jobs:
       run: cmake --build . --config $BUILD_TYPE
       env:
         MAKEFLAGS: "-j2"
+    
+    - name: Make LOC badge
+      uses: shadowmoose/GHA-LoC-Badge@1.0.0
+      id: badge
+      with:
+        debug: true
+        badge: ./output/badge.svg
+        patterns: '*.c|*.h'
+        ignore: 'example'
+    
+    - name: Deploy badge
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./output
