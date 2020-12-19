@@ -79,7 +79,10 @@ implements some safety to tests, catching fatal signals and hung functions.
 
 Self tests can be run along with own tests by adding compiler flag `-DIHCT_SELF_TEST`. (This may be very redundant; just see it as more examples :-) )
 
-## Notes
+all macros (`IHCT_TEST`, `IHCT_ASSERT` etc.) can be shortened to remove the `IHCT` prefix, by defining `IHCT_SHORT` **before**
+including the header file.
+
+## Compatability notes
  - Since it requires `__attribute__((constructor))` it is not compilable with MSVC.
  - Since it uses pthreads and signals, it is POSIX (again, not sure it works with Windows).
 
