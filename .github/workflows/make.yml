@@ -47,7 +47,6 @@ jobs:
       id: badge
       with:
         badge: ./output/badge.svg
-        badge_style: flat
         badge_label: 'locs'
         patterns: 'src/*.c|src/*.h'
     
