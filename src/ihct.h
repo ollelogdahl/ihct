@@ -17,13 +17,6 @@ typedef struct {
 // Short for a function returning a test_result pointer, with no arguments.
 typedef void (*ihct_test_proc)(ihct_test_result *);
 
-// Object representing a testing unit, containing the units name and its procedure
-// (implemented test function).
-typedef struct {
-    char *name;
-    ihct_test_proc procedure;
-} ihct_unit;
-
 // Called within a test. 
 bool ihct_assert_impl(bool eval, ihct_test_result *result, char *code, char *file, 
                       unsigned long line);
@@ -37,30 +30,6 @@ int ihct_run(int argc, char **argv);
 // Initializes the unitlist (Has to be done before all testing units are created).
 // Using priority to ensure that the unit list is constructed before it gets populated.
 void ihct_init(void) __attribute__((constructor(101)));
-
-// These are ISO/IEC 6429 escape sequences for
-// communicating text attributes to terminal emulators.
-// Note that some compilers do not understand '\x1b', and therefore \033[0m is 
-// used instead.
-#define IHCT_RESET "\033[0m"
-#define IHCT_BOLD "\033[1m"
-#define IHCT_FG_GRAY "\033[30;1m"
-#define IHCT_FG_RED "\033[31;1m"
-#define IHCT_FG_GREEN "\033[32;1m"
-#define IHCT_FG_YELLOW "\033[33;1m"
-#define IHCT_FG_BLUE "\033[34;1m"
-#define IHCT_FG_MAGENTA "\033[35;1m"
-#define IHCT_FG_CYAN "\033[36;1m"
-#define IHCT_FG_WHITE "\033[37;1m"
-#define IHCT_BG_BLACK "\033[40;1m"
-#define IHCT_BG_RED "\033[41;1m"
-#define IHCT_BG_GREEN "\033[42;1m"
-#define IHCT_BG_YELLOW "\033[43;1m"
-#define IHCT_BG_BLUE "\033[44;1m"
-#define IHCT_BG_MAGENTA "\033[45;1m"
-#define IHCT_BG_CYAN "\033[46;1m"
-#define IHCT_BG_GRAY "\033[47;1m"
-
 
 // Assertions
 /// @defgroup assertions Assertions

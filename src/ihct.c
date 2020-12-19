@@ -22,12 +22,43 @@ static ihct_vector *testunits;
 // An array of all first failed (or last if all successful) assert results in every test.
 static ihct_test_result **ihct_results;
 
+// Object representing a testing unit, containing the units name and its procedure
+// (implemented test function).
+typedef struct {
+    char *name;
+    ihct_test_proc procedure;
+} ihct_unit;
+
+
 // The number of seconds passed until a test is considered timedout.
 // Default 3. Can be set with -t [time in sec]
 int test_timeout = 3;
 
 pthread_cond_t routine_done = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+
+// These are ISO/IEC 6429 escape sequences for
+// communicating text attributes to terminal emulators.
+// Note that some compilers do not understand '\x1b', and therefore \033[0m is 
+// used instead.
+#define IHCT_RESET "\033[0m"
+#define IHCT_BOLD "\033[1m"
+#define IHCT_FG_GRAY "\033[30;1m"
+#define IHCT_FG_RED "\033[31;1m"
+#define IHCT_FG_GREEN "\033[32;1m"
+#define IHCT_FG_YELLOW "\033[33;1m"
+#define IHCT_FG_BLUE "\033[34;1m"
+#define IHCT_FG_MAGENTA "\033[35;1m"
+#define IHCT_FG_CYAN "\033[36;1m"
+#define IHCT_FG_WHITE "\033[37;1m"
+#define IHCT_BG_BLACK "\033[40;1m"
+#define IHCT_BG_RED "\033[41;1m"
+#define IHCT_BG_GREEN "\033[42;1m"
+#define IHCT_BG_YELLOW "\033[43;1m"
+#define IHCT_BG_BLUE "\033[44;1m"
+#define IHCT_BG_MAGENTA "\033[45;1m"
+#define IHCT_BG_CYAN "\033[46;1m"
+#define IHCT_BG_GRAY "\033[47;1m"
 
 static void ihct_set_sigaction(void) {
     sigaction(SIGSEGV, &recover_action, NULL);
