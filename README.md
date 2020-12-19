@@ -6,7 +6,7 @@ Olle Lögdahl, 13 December 2020
 ![docs](https://img.shields.io/github/workflow/status/ollelogdahl/ihct/Doxygen?label=docs)
 ![licence](https://img.shields.io/github/license/ollelogdahl/ihct)
 ![issues](https://img.shields.io/github/issues-raw/ollelogdahl/ihct)
-![sloc](https://tokei.rs/b1/github/ollelogdahl/ihct?category=code)
+![sloc](https://raw.githubusercontent.com/ollelogdahl/ihct/image-data/badge.svg)
 
 ---
 
