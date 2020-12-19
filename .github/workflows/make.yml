@@ -46,10 +46,9 @@ jobs:
       uses: shadowmoose/GHA-LoC-Badge@1.0.0
       id: badge
       with:
-        debug: true
         badge: ./output/badge.svg
-        patterns: '*.c|*.h'
-        ignore: 'example'
+        badge:style: flat
+        patterns: 'src/*.c|src/*.h'
     
     - name: Deploy badge
       uses: peaceiris/actions-gh-pages@v3
