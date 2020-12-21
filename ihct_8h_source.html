@@ -130,7 +130,7 @@ $(document).ready(function(){initNavTree('ihct_8h_source.html',''); initResizabl
 <div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="preprocessor">    if(!ihct_assert_impl(expr, result, #expr, __FILE__, __LINE__)) return</span></div>
 <div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160; </div>
 <div class="line"><a name="l00059"></a><span class="lineno"><a class="line" href="group__assertions.html#gab2f80fdd050efcd1672d1046b078f6f9">   59</a></span>&#160;<span class="preprocessor">#define IHCT_NASSERT(expr)                                                              \</span></div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="preprocessor">    if(!ihct_assert_impl(!expr, result, &quot;!&quot; #expr, __FILE__, __LINE__)) return</span></div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="preprocessor">    if(!ihct_assert_impl(!expr, result, &quot;!(&quot; #expr &quot;)&quot;, __FILE__, __LINE__)) return</span></div>
 <div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160; </div>
 <div class="line"><a name="l00069"></a><span class="lineno"><a class="line" href="group__assertions.html#ga32283b0568d386d5404813a42319da93">   69</a></span>&#160;<span class="preprocessor">#define IHCT_ASSERT_STR(s1, s2)                                                         \</span></div>
 <div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="preprocessor">    if(!ihct_assert_impl(!strcmp(s1, s2), result, #s1 &quot; == &quot; #s2, __FILE__,             \</span></div>
