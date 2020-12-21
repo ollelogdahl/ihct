@@ -57,7 +57,7 @@ void ihct_init(void) __attribute__((constructor(101)));
 ///
 /// Can be shortened to remove 'IHCT_' prefix by defining IHCT_SHORT.
 #define IHCT_NASSERT(expr)                                                              \
-    if(!ihct_assert_impl(!expr, result, "!" #expr, __FILE__, __LINE__)) return
+    if(!ihct_assert_impl(!expr, result, "!(" #expr ")", __FILE__, __LINE__)) return
 
 /// @brief Asserts two strings inside a test unit to be equal. If there is any difference
 /// in the strings, the unit will fail the test.
