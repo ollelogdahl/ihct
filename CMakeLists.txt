@@ -13,8 +13,7 @@ add_library(ihct
     src/vector.c
 )
 target_link_libraries(ihct PRIVATE Threads::Threads)
-
-include_directories("${CMAKE_SOURCE_DIR}/src")
+target_include_directories(ihct PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 add_executable(example
     examples/ex.c
@@ -24,4 +23,4 @@ target_link_libraries(example PRIVATE Threads::Threads ihct)
 set(inc_dest "include/")
 set(lib_dest "lib/")
 install(TARGETS ihct DESTINATION ${lib_dest})
-install(FILES "${CMAKE_SOURCE_DIR}/src/ihct.h" DESTINATION ${inc_dest})
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/ihct.h" DESTINATION ${inc_dest})
