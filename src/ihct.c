@@ -60,15 +60,6 @@ pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 #define IHCT_BG_CYAN "\033[46;1m"
 #define IHCT_BG_GRAY "\033[47;1m"
 
-static void ihct_set_sigaction(void) {
-    sigaction(SIGSEGV, &recover_action, NULL);
-    sigaction(SIGTERM, &recover_action, NULL);
-    sigaction(SIGFPE, &recover_action, NULL);
-    sigaction(SIGILL, &recover_action, NULL);
-    sigaction(SIGABRT, &recover_action, NULL);
-    sigaction(SIGBUS, &recover_action, NULL);
-}
-
 // Procedure called when a signal is thrown within a test. When a fatal signal is
 // recieved, we jump back to before the test is ran, giving the signal code.
 static void ihct_recovery_proc(int sig) {
@@ -83,7 +74,12 @@ static void ihct_setup_recover_action(void) {
     recover_action.sa_flags = 0;
     // binding sigactions. Dont pick up on user interrupts (let them be managed
     // normally).
-    ihct_set_sigaction();
+    sigaction(SIGSEGV, &recover_action, NULL);
+    sigaction(SIGTERM, &recover_action, NULL);
+    sigaction(SIGFPE, &recover_action, NULL);
+    sigaction(SIGILL, &recover_action, NULL);
+    sigaction(SIGABRT, &recover_action, NULL);
+    sigaction(SIGBUS, &recover_action, NULL);
 }
 
 
@@ -286,10 +282,6 @@ static ihct_test_result *ihct_run_specific(ihct_unit *unit) {
     int err =  pthread_cond_timedwait(&routine_done, &lock, &timeout);
 
     pthread_mutex_unlock(&lock);
-
-    // Reset to default signal handler after the unit has been run.
-    //recover_action.sa_handler = SIG_DFL;
-    //ihct_set_sigaction();
 
     // If timed out, force quit thread and return TIMEOUT.
     // Note that this is not safe memory. There is a high chance that
